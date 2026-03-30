@@ -9,17 +9,15 @@
 <meta name="apple-mobile-web-app-title" content="칼로리 기록">
 <link rel="manifest" href="manifest.json">
 <title>칼로리 기록</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--coral:#FF6B6B;--coral-light:#FFE5E5;--coral-dark:#E85555;--mint:#6BCFB0;--mint-light:#E5F9F3;--yellow:#FFD166;--yellow-light:#FFF8E1;--purple:#C77DFF;--bg:#FFF9F7;--text:#2D2D2D;--muted:#999;--border:#F0E8E8;--shadow:0 4px 20px rgba(255,107,107,.1)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-.header{background:linear-gradient(135deg,#FF6B6B,#FF8E8E);padding:20px 20px 28px;position:relative;overflow:hidden}
-.header::before{content:'';position:absolute;bottom:-20px;left:-20px;width:120px;height:120px;background:rgba(255,255,255,.1);border-radius:50%}
-.header::after{content:'';position:absolute;top:-30px;right:-10px;width:90px;height:90px;background:rgba(255,255,255,.08);border-radius:50%}
+.header{background:linear-gradient(160deg,#FF6B6B 0%,#FF4757 100%);padding:20px 20px 28px;position:relative}
 .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.header-title{font-family:'Gaegu',cursive;font-size:24px;color:#fff;font-weight:700}
-.header-date{color:rgba(255,255,255,.85);font-size:13px}
+.header-title{font-family:'Montserrat',sans-serif;font-size:18px;color:#fff;font-weight:700;letter-spacing:-.3px}
+.header-date{color:rgba(255,255,255,.8);font-size:12px;margin-top:2px}
 .settings-btn{background:rgba(255,255,255,.25);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:10;touch-action:manipulation}
 .ring-container{display:flex;justify-content:center;align-items:center;gap:20px}
 .ring-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
@@ -126,10 +124,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <div class="header">
   <div class="header-top">
     <div>
-      <div class="header-title">🍱 오늘 뭐먹었니?</div>
+      <div class="header-title">칼로리 기록</div>
       <div class="header-date" id="headerDate"></div>
     </div>
     <button class="settings-btn" id="settingsBtn">⚙️</button>
+  </div>
+  <!-- 날짜 선택 -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+    <button onclick="changeViewDate(-1)" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">‹</button>
+    <input type="date" id="viewDateInput" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 14px;color:#fff;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;cursor:pointer" onchange="onViewDateChange()">
+    <button onclick="changeViewDate(1)" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">›</button>
+    <button id="todayBtn" onclick="goToday()" style="display:none;background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif">오늘</button>
   </div>
   <div class="ring-container">
     <div class="ring-wrap">
@@ -178,15 +183,15 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <input class="search-input" id="searchInput" placeholder="음식 이름 (예: 비빔밥, 삼겹살)" onkeydown="if(event.key==='Enter')searchFood()">
     <button class="search-btn" onclick="searchFood()">검색</button>
   </div>
-  <div id="searchLoading" style="display:none" class="loading">AI가 칼로리 찾는 중</div>
+  <div id="searchLoading" style="display:none" class="loading">검색 중</div>
   <div id="searchResults"></div>
   <div id="addSection" style="display:none">
     <div class="section-title">🍽️ 식사 종류</div>
     <div class="meal-type-row">
-      <button class="meal-type-btn active" onclick="selectMealType('아침',this)"><span class="mt-emoji">🌅</span>아침</button>
-      <button class="meal-type-btn" onclick="selectMealType('점심',this)"><span class="mt-emoji">☀️</span>점심</button>
-      <button class="meal-type-btn" onclick="selectMealType('저녁',this)"><span class="mt-emoji">🌙</span>저녁</button>
-      <button class="meal-type-btn" onclick="selectMealType('간식',this)"><span class="mt-emoji">🍪</span>간식</button>
+      <button class="meal-type-btn active" onclick="selectMealType('아침',this)">아침</button>
+      <button class="meal-type-btn" onclick="selectMealType('점심',this)">점심</button>
+      <button class="meal-type-btn" onclick="selectMealType('저녁',this)">저녁</button>
+      <button class="meal-type-btn" onclick="selectMealType('간식',this)">간식</button>
     </div>
     <div class="amount-row">
       <span class="amount-label">양</span>
@@ -205,21 +210,21 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <!-- PAGE: TODAY -->
 <div class="page" id="page-today">
   <div class="nutrient-section">
-    <div class="section-title">🥗 오늘의 영양소</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:14px">오늘의 영양소</div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🍞 탄수화물</span><span class="nutrient-val" id="carbVal">0/130g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">탄수화물</span><span class="nutrient-val" id="carbVal">0/130g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="carbBar" style="width:0%;background:#FFD166"></div></div>
     </div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🥩 단백질</span><span class="nutrient-val" id="proteinVal">0/50g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">단백질</span><span class="nutrient-val" id="proteinVal">0/50g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="proteinBar" style="width:0%;background:#6BCFB0"></div></div>
     </div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🧈 지방</span><span class="nutrient-val" id="fatVal">0/44g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">지방</span><span class="nutrient-val" id="fatVal">0/44g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="fatBar" style="width:0%;background:#C77DFF"></div></div>
     </div>
     <div class="nutrient-row" style="margin-bottom:0">
-      <div class="nutrient-head"><span class="nutrient-name">🧂 나트륨</span><span class="nutrient-val" id="sodiumVal">0/2000mg</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">나트륨</span><span class="nutrient-val" id="sodiumVal">0/2000mg</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="sodiumBar" style="width:0%;background:#FF6B6B"></div></div>
     </div>
   </div>
@@ -317,10 +322,37 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <script>
 const STATE = {
   bmr:1330, goalKcal:null, bingeThreshold:800,
-  selectedFood:null, selectedMealType:'아침', selectedExercise:null
+  selectedFood:null, selectedMealType:'아침', selectedExercise:null,
+  viewDate: new Date().toISOString().split('T')[0],
 };
 let _historyYear, _historyMonth;
-const todayKey = () => new Date().toISOString().split('T')[0];
+const todayStr = () => new Date().toISOString().split('T')[0];
+const todayKey = () => STATE.viewDate;
+
+function changeViewDate(delta) {
+  const d = new Date(STATE.viewDate + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  STATE.viewDate = d.toISOString().split('T')[0];
+  applyViewDate();
+}
+function onViewDateChange() {
+  const v = document.getElementById('viewDateInput').value;
+  if(v) STATE.viewDate = v;
+  applyViewDate();
+}
+function goToday() { STATE.viewDate = todayStr(); applyViewDate(); }
+function applyViewDate() {
+  document.getElementById('viewDateInput').value = STATE.viewDate;
+  const isToday = STATE.viewDate === todayStr();
+  document.getElementById('todayBtn').style.display = isToday ? 'none' : 'block';
+  const d = new Date(STATE.viewDate + 'T00:00:00');
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('headerDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  updateRing(); renderWater();
+  const active = document.querySelector('.page.active')?.id;
+  if(active === 'page-today') renderToday();
+}
 
 // Storage
 function getLogs()    { return JSON.parse(localStorage.getItem('ct_logs')||'{}'); }
@@ -343,12 +375,12 @@ function loadSettings() {
 
 window.addEventListener('load', () => {
   loadSettings();
-  // 날짜 표시
+  STATE.viewDate = todayStr();
+  document.getElementById('viewDateInput').value = STATE.viewDate;
   const now=new Date(); const days=['일','월','화','수','목','금','토'];
   document.getElementById('headerDate').textContent=
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
   renderWater(); updateRing();
-  // 설정 버튼
   document.getElementById('settingsBtn').addEventListener('click', openSettings);
   if('serviceWorker' in navigator) navigator.serviceWorker.register('/calorie/sw.js').catch(()=>{});
 });
@@ -600,7 +632,129 @@ const FOOD_DB = [
   {name:'핫바',emoji:'🌭',serving:'1개(80g)',kcal:210,carb:16,protein:8,fat:13,sodium:380},
   {name:'샌드위치',emoji:'🥪',serving:'1개(130g)',kcal:280,carb:32,protein:12,fat:12,sodium:580},
   {name:'바나나우유',emoji:'🥛',serving:'1팩(240ml)',kcal:150,carb:28,protein:5,fat:3,sodium:80},
+  // ── 추가 한식 ──
+  {name:'순두부찌개(해물)',emoji:'🍲',serving:'1인분(350g)',kcal:200,carb:10,protein:18,fat:10,sodium:1400},
+  {name:'감자탕',emoji:'🍲',serving:'1인분(400g)',kcal:380,carb:22,protein:28,fat:18,sodium:1700},
+  {name:'해장국',emoji:'🍲',serving:'1그릇(400g)',kcal:250,carb:18,protein:20,fat:10,sodium:1600},
+  {name:'닭볶음',emoji:'🍗',serving:'1인분(250g)',kcal:300,carb:16,protein:26,fat:14,sodium:900},
+  {name:'제육덮밥',emoji:'🍚',serving:'1인분(350g)',kcal:580,carb:74,protein:26,fat:18,sodium:1100},
+  {name:'덮밥(소불고기)',emoji:'🍚',serving:'1인분(350g)',kcal:560,carb:76,protein:24,fat:14,sodium:950},
+  {name:'낙지볶음',emoji:'🐙',serving:'1인분(200g)',kcal:200,carb:16,protein:22,fat:6,sodium:1000},
+  {name:'오삼불고기',emoji:'🦑',serving:'1인분(250g)',kcal:320,carb:20,protein:26,fat:14,sodium:1100},
+  {name:'두루치기',emoji:'🥩',serving:'1인분(200g)',kcal:340,carb:16,protein:24,fat:18,sodium:900},
+  {name:'불닭볶음',emoji:'🍗',serving:'1인분(200g)',kcal:360,carb:20,protein:28,fat:18,sodium:1200},
+  {name:'쭈꾸미볶음',emoji:'🐙',serving:'1인분(200g)',kcal:240,carb:18,protein:22,fat:8,sodium:1100},
+  {name:'갈비찜',emoji:'🍖',serving:'1인분(250g)',kcal:420,carb:20,protein:30,fat:24,sodium:800},
+  {name:'찜닭',emoji:'🍗',serving:'1인분(350g)',kcal:400,carb:30,protein:30,fat:16,sodium:1200},
+  {name:'닭강정',emoji:'🍗',serving:'1인분(200g)',kcal:480,carb:36,protein:26,fat:26,sodium:700},
+  {name:'매운갈비찜',emoji:'🍖',serving:'1인분(250g)',kcal:440,carb:22,protein:30,fat:26,sodium:1000},
+  {name:'생선전',emoji:'🐟',serving:'2개(100g)',kcal:180,carb:12,protein:14,fat:8,sodium:400},
+  {name:'김전',emoji:'🥬',serving:'1인분(100g)',kcal:220,carb:14,protein:8,fat:14,sodium:350},
+  {name:'해물파전',emoji:'🥞',serving:'1인분(200g)',kcal:380,carb:42,protein:14,fat:16,sodium:700},
+  {name:'김치전',emoji:'🥞',serving:'1인분(150g)',kcal:320,carb:36,protein:8,fat:14,sodium:600},
+  {name:'동태찌개',emoji:'🍲',serving:'1인분(350g)',kcal:180,carb:8,protein:22,fat:6,sodium:1500},
+  {name:'북엇국',emoji:'🍵',serving:'1그릇(300g)',kcal:120,carb:6,protein:14,fat:4,sodium:900},
+  {name:'무국',emoji:'🍵',serving:'1그릇(300g)',kcal:60,carb:8,protein:3,fat:1,sodium:700},
+  {name:'된장국',emoji:'🍵',serving:'1그릇(250g)',kcal:90,carb:7,protein:6,fat:3,sodium:1100},
+  {name:'청국장',emoji:'🍲',serving:'1인분(300g)',kcal:150,carb:12,protein:12,fat:6,sodium:1300},
+  {name:'순대국밥',emoji:'🍲',serving:'1인분(500g)',kcal:520,carb:52,protein:24,fat:22,sodium:1600},
+  {name:'돼지국밥',emoji:'🍲',serving:'1인분(500g)',kcal:480,carb:48,protein:26,fat:20,sodium:1500},
+  {name:'황태해장국',emoji:'🍲',serving:'1인분(400g)',kcal:200,carb:10,protein:22,fat:8,sodium:1400},
+  {name:'알탕',emoji:'🍲',serving:'1인분(350g)',kcal:220,carb:12,protein:20,fat:10,sodium:1600},
+  {name:'골뱅이무침',emoji:'🐚',serving:'1인분(200g)',kcal:220,carb:22,protein:16,fat:6,sodium:900},
+  {name:'묵무침',emoji:'🥗',serving:'1인분(150g)',kcal:80,carb:14,protein:2,fat:2,sodium:400},
+  {name:'도토리묵밥',emoji:'🥗',serving:'1인분(350g)',kcal:280,carb:48,protein:6,fat:5,sodium:700},
+  // ── 배달/외식 ──
+  {name:'마라탕',emoji:'🌶️',serving:'1인분(400g)',kcal:520,carb:40,protein:22,fat:28,sodium:1800},
+  {name:'탕수육',emoji:'🍖',serving:'1인분(200g)',kcal:450,carb:40,protein:18,fat:24,sodium:600},
+  {name:'군만두',emoji:'🥟',serving:'5개(150g)',kcal:320,carb:34,protein:12,fat:14,sodium:600},
+  {name:'쌀국수',emoji:'🍜',serving:'1인분(400g)',kcal:380,carb:62,protein:16,fat:6,sodium:1100},
+  {name:'쌀국수(소)',emoji:'🍜',serving:'1인분(300g)',kcal:280,carb:46,protein:12,fat:4,sodium:900},
+  {name:'분짜',emoji:'🍜',serving:'1인분(350g)',kcal:380,carb:52,protein:18,fat:10,sodium:1000},
+  {name:'쌈밥',emoji:'🥬',serving:'1인분(400g)',kcal:480,carb:62,protein:22,fat:16,sodium:900},
+  {name:'초밥(1개)',emoji:'🍣',serving:'1개(30g)',kcal:50,carb:9,protein:3,fat:1,sodium:100},
+  {name:'초밥세트(8개)',emoji:'🍣',serving:'8개(240g)',kcal:400,carb:72,protein:24,fat:8,sodium:800},
+  {name:'연어초밥',emoji:'🍣',serving:'2개(60g)',kcal:110,carb:16,protein:6,fat:3,sodium:200},
+  {name:'참치마요 덮밥',emoji:'🍚',serving:'1인분(350g)',kcal:550,carb:72,protein:20,fat:18,sodium:800},
+  {name:'규동',emoji:'🍚',serving:'1인분(400g)',kcal:580,carb:78,protein:22,fat:18,sodium:900},
+  {name:'오야코동',emoji:'🍚',serving:'1인분(380g)',kcal:540,carb:72,protein:24,fat:16,sodium:950},
+  {name:'돈카츠',emoji:'🍖',serving:'1인분(200g)',kcal:480,carb:28,protein:24,fat:30,sodium:650},
+  {name:'돈카츠 정식',emoji:'🍱',serving:'1세트',kcal:750,carb:88,protein:28,fat:30,sodium:900},
+  {name:'함박스테이크',emoji:'🥩',serving:'1인분(200g)',kcal:380,carb:14,protein:24,fat:26,sodium:700},
+  {name:'치즈돈까스',emoji:'🍖',serving:'1인분(220g)',kcal:560,carb:30,protein:26,fat:36,sodium:750},
+  {name:'스테이크(소)',emoji:'🥩',serving:'1인분(150g)',kcal:300,carb:0,protein:30,fat:20,sodium:300},
+  {name:'나시고렝',emoji:'🍳',serving:'1인분(300g)',kcal:480,carb:68,protein:14,fat:16,sodium:900},
+  {name:'팟타이',emoji:'🍜',serving:'1인분(300g)',kcal:460,carb:62,protein:16,fat:14,sodium:1000},
+  {name:'쌀국수(닭)',emoji:'🍜',serving:'1인분(400g)',kcal:340,carb:54,protein:18,fat:4,sodium:1000},
+  {name:'타코',emoji:'🌮',serving:'2개(200g)',kcal:380,carb:36,protein:18,fat:16,sodium:700},
+  {name:'부리토',emoji:'🌯',serving:'1개(300g)',kcal:520,carb:60,protein:22,fat:18,sodium:1200},
+  // ── 분식 추가 ──
+  {name:'라볶이',emoji:'🌶️',serving:'1인분(300g)',kcal:480,carb:84,protein:12,fat:10,sodium:1300},
+  {name:'치즈떡볶이',emoji:'🧀',serving:'1인분(300g)',kcal:480,carb:74,protein:14,fat:14,sodium:1200},
+  {name:'로제떡볶이',emoji:'🌶️',serving:'1인분(300g)',kcal:500,carb:70,protein:12,fat:16,sodium:1100},
+  {name:'떡볶이(소)',emoji:'🌶️',serving:'1인분(150g)',kcal:190,carb:36,protein:4,fat:3,sodium:550},
+  {name:'쌀떡볶이',emoji:'🌶️',serving:'1인분(250g)',kcal:360,carb:68,protein:8,fat:6,sodium:1000},
+  {name:'엽기떡볶이(소)',emoji:'🌶️',serving:'1인분(200g)',kcal:350,carb:64,protein:8,fat:7,sodium:1000},
+  {name:'계란말이',emoji:'🍳',serving:'1인분(100g)',kcal:140,carb:4,protein:10,fat:10,sodium:300},
+  {name:'오뎅탕',emoji:'🍢',serving:'1인분(300g)',kcal:150,carb:16,protein:10,fat:4,sodium:1200},
+  // ── 카페/디저트 추가 ──
+  {name:'아이스아메리카노',emoji:'☕',serving:'1잔(355ml)',kcal:10,carb:1,protein:0,fat:0,sodium:10},
+  {name:'플랫화이트',emoji:'☕',serving:'1잔(200ml)',kcal:100,carb:8,protein:6,fat:4,sodium:60},
+  {name:'콜드브루',emoji:'☕',serving:'1잔(355ml)',kcal:15,carb:2,protein:1,fat:0,sodium:10},
+  {name:'딸기라떼',emoji:'🍓',serving:'1잔(355ml)',kcal:260,carb:42,protein:7,fat:7,sodium:100},
+  {name:'흑당밀크티',emoji:'🧋',serving:'1잔(450ml)',kcal:380,carb:66,protein:6,fat:9,sodium:120},
+  {name:'버블티(타로)',emoji:'🧋',serving:'1잔(500ml)',kcal:420,carb:72,protein:5,fat:10,sodium:110},
+  {name:'에이드(자몽)',emoji:'🍹',serving:'1잔(450ml)',kcal:200,carb:48,protein:0,fat:0,sodium:20},
+  {name:'레몬에이드',emoji:'🍋',serving:'1잔(450ml)',kcal:180,carb:44,protein:0,fat:0,sodium:15},
+  {name:'케이크(한조각)',emoji:'🍰',serving:'1조각(100g)',kcal:320,carb:42,protein:5,fat:14,sodium:200},
+  {name:'치즈케이크',emoji:'🍰',serving:'1조각(100g)',kcal:360,carb:32,protein:7,fat:22,sodium:280},
+  {name:'티라미수',emoji:'🍰',serving:'1인분(120g)',kcal:340,carb:36,protein:6,fat:18,sodium:150},
+  {name:'마카롱',emoji:'🍬',serving:'1개(15g)',kcal:70,carb:10,protein:1,fat:3,sodium:20},
+  {name:'와플',emoji:'🧇',serving:'1개(80g)',kcal:240,carb:34,protein:5,fat:10,sodium:280},
+  {name:'팬케이크',emoji:'🥞',serving:'2장(100g)',kcal:260,carb:38,protein:7,fat:9,sodium:350},
+  {name:'크레페',emoji:'🥞',serving:'1개(120g)',kcal:280,carb:36,protein:6,fat:12,sodium:200},
+  {name:'요거트(플레인)',emoji:'🫙',serving:'1개(100g)',kcal:60,carb:6,protein:5,fat:2,sodium:50},
+  {name:'그릭요거트',emoji:'🫙',serving:'1개(150g)',kcal:100,carb:6,protein:14,fat:1,sodium:60},
+  {name:'그래놀라',emoji:'🥣',serving:'1인분(60g)',kcal:260,carb:36,protein:6,fat:10,sodium:80},
+  {name:'아사이볼',emoji:'🫐',serving:'1인분(300g)',kcal:320,carb:52,protein:6,fat:10,sodium:60},
+  // ── 과자 추가 ──
+  {name:'프링글스(한통)',emoji:'🥔',serving:'1통(110g)',kcal:580,carb:68,protein:6,fat:30,sodium:480},
+  {name:'빠다코코낫',emoji:'🍪',serving:'1봉(90g)',kcal:440,carb:64,protein:6,fat:18,sodium:360},
+  {name:'칸쵸',emoji:'🍫',serving:'1봉(42g)',kcal:210,carb:28,protein:3,fat:10,sodium:80},
+  {name:'빼빼로(아몬드)',emoji:'🍫',serving:'1통(37g)',kcal:190,carb:24,protein:3,fat:9,sodium:70},
+  {name:'롯데샌드',emoji:'🍪',serving:'1봉(92g)',kcal:460,carb:64,protein:6,fat:20,sodium:300},
+  {name:'홈런볼',emoji:'⚾',serving:'1봉(46g)',kcal:220,carb:30,protein:3,fat:10,sodium:110},
+  {name:'꼬북칩',emoji:'🥔',serving:'1봉(55g)',kcal:280,carb:38,protein:3,fat:13,sodium:280},
+  {name:'감자깡',emoji:'🥔',serving:'1봉(75g)',kcal:360,carb:52,protein:4,fat:15,sodium:420},
+  {name:'고구마깡',emoji:'🍠',serving:'1봉(75g)',kcal:350,carb:54,protein:4,fat:13,sodium:380},
+  {name:'치킨팝',emoji:'🍗',serving:'1봉(50g)',kcal:240,carb:30,protein:5,fat:12,sodium:350},
+  {name:'누네띠네',emoji:'🍪',serving:'1봉(90g)',kcal:430,carb:62,protein:5,fat:18,sodium:280},
+  {name:'쌀과자',emoji:'🍘',serving:'1봉(80g)',kcal:340,carb:68,protein:6,fat:4,sodium:200},
+  {name:'수박바',emoji:'🍉',serving:'1개(105ml)',kcal:100,carb:22,protein:1,fat:1,sodium:30},
+  {name:'구구콘',emoji:'🍦',serving:'1개(80ml)',kcal:190,carb:26,protein:3,fat:8,sodium:60},
+  {name:'메로나',emoji:'🍈',serving:'1개(80ml)',kcal:100,carb:18,protein:1,fat:3,sodium:40},
+  {name:'투게더(컵)',emoji:'🍦',serving:'1컵(150ml)',kcal:300,carb:36,protein:4,fat:16,sodium:80},
+  {name:'하겐다즈',emoji:'🍨',serving:'1컵(100ml)',kcal:280,carb:26,protein:5,fat:18,sodium:60},
+  // ── 건강식 추가 ──
+  {name:'오트밀',emoji:'🥣',serving:'1인분(40g)',kcal:150,carb:27,protein:5,fat:3,sodium:0},
+  {name:'현미밥(작은)',emoji:'🍚',serving:'반공기(105g)',kcal:147,carb:32,protein:3,fat:1,sodium:1},
+  {name:'닭가슴살 샐러드',emoji:'🥗',serving:'1인분(300g)',kcal:200,carb:10,protein:28,fat:6,sodium:400},
+  {name:'삶은닭가슴살',emoji:'🍗',serving:'1개(100g)',kcal:109,carb:0,protein:23,fat:1,sodium:74},
+  {name:'삶은고구마',emoji:'🍠',serving:'1개(150g)',kcal:128,carb:30,protein:2,fat:0,sodium:36},
+  {name:'삶은감자',emoji:'🥔',serving:'1개(150g)',kcal:108,carb:24,protein:2,fat:0,sodium:6},
+  {name:'단백질바',emoji:'💪',serving:'1개(60g)',kcal:200,carb:20,protein:20,fat:6,sodium:150},
+  {name:'프로틴쉐이크',emoji:'🥛',serving:'1잔(300ml)',kcal:180,carb:12,protein:30,fat:2,sodium:200},
+  {name:'계란흰자',emoji:'🥚',serving:'3개(105g)',kcal:51,carb:1,protein:11,fat:0,sodium:165},
+  {name:'연두부',emoji:'🧊',serving:'1팩(80g)',kcal:45,carb:1,protein:5,fat:2,sodium:5},
+  {name:'방울토마토',emoji:'🍅',serving:'10개(100g)',kcal:18,carb:4,protein:1,fat:0,sodium:5},
+  {name:'오이',emoji:'🥒',serving:'1개(100g)',kcal:15,carb:3,protein:1,fat:0,sodium:2},
+  {name:'당근',emoji:'🥕',serving:'1/2개(75g)',kcal:31,carb:7,protein:1,fat:0,sodium:42},
+  {name:'브로콜리',emoji:'🥦',serving:'1인분(100g)',kcal:34,carb:7,protein:3,fat:0,sodium:33},
+  {name:'견과류믹스',emoji:'🥜',serving:'1인분(30g)',kcal:180,carb:8,protein:5,fat:15,sodium:5},
+  {name:'아몬드',emoji:'🥜',serving:'1인분(30g)',kcal:174,carb:6,protein:6,fat:15,sodium:0},
+  {name:'호두',emoji:'🥜',serving:'1인분(30g)',kcal:196,carb:4,protein:5,fat:20,sodium:1},
 ];
+
 
 const EXERCISE_DB = [
   {name:'걷기',emoji:'🚶',kcalPerMin:3.5,intensity:'낮음',tip:'빠르게 걸을수록 소모 증가'},
@@ -639,11 +793,13 @@ function searchFood() {
   document.getElementById('addSection').style.display = 'none';
   STATE.selectedFood = null;
 
-  // 검색어로 DB에서 찾기 (초성/부분일치)
-  const results = FOOD_DB.filter(f =>
+  // 사용자 저장 음식 + 기본 DB 합쳐서 검색
+  const userDB = JSON.parse(localStorage.getItem('ct_user_foods')||'[]');
+  const allDB = [...userDB, ...FOOD_DB];
+  const results = allDB.filter(f =>
     f.name.includes(q) ||
     q.split('').every(ch => f.name.includes(ch))
-  ).slice(0, 5);
+  ).slice(0, 6);
 
   setTimeout(() => {
     document.getElementById('searchLoading').style.display = 'none';
@@ -701,9 +857,15 @@ function addCustomFood() {
     fat: parseInt(document.getElementById('customFat')?.value)||0,
     sodium: 0
   };
+  // 사용자 정의 DB에 저장
+  const userDB = JSON.parse(localStorage.getItem('ct_user_foods')||'[]');
+  if (!userDB.some(f=>f.name===name)) {
+    userDB.push(food);
+    localStorage.setItem('ct_user_foods', JSON.stringify(userDB));
+    showToast(`${name} 저장됐어요! 다음부터 검색 가능해요 ✅`, 'success');
+  }
   selectFood(food, null);
   document.getElementById('addSection').style.display = 'block';
-  showToast(`${name} 선택됐어요!`, 'success');
 }
 
 // 운동 검색 함수
@@ -952,17 +1114,33 @@ function renderHistory(){
     const key=`${_historyYear}-${String(_historyMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const items=logs[key]; if(!items||!items.length) continue; found=true;
     const kcal=items.reduce((s,i)=>s+i.kcal,0); const pct=Math.min(kcal/goal*100,100);
-    const dateObj=new Date(key);
+    const dateObj=new Date(key+'T00:00:00');
     const div=document.createElement('div'); div.className='history-day';
+    div.style.cursor='pointer';
     div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
       <span style="font-size:13px;font-weight:700">${_historyMonth+1}월 ${d}일 (${days[dateObj.getDay()]})</span>
       <span style="font-size:14px;font-weight:700;color:var(--coral)">${kcal}kcal ${kcal>goal?'🔴':'🟢'}</span></div>
     <div style="height:6px;background:#F5F5F5;border-radius:3px;overflow:hidden;margin-bottom:8px">
       <div style="height:100%;background:${kcal>goal?'#FF6B6B':'#6BCFB0'};border-radius:3px;width:${pct}%"></div></div>
-    <div style="font-size:12px;color:var(--muted)">${items.map(i=>i.emoji+i.name).join(' · ')}</div>`;
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">${items.map(i=>i.name).join(' · ')}</div>
+    <div style="font-size:11px;color:var(--coral);font-weight:500">탭해서 상세 보기 →</div>`;
+    div.onclick = () => showHistoryDetail(key);
     el.appendChild(div);
   }
   if(!found) el.innerHTML='<div class="empty-state"><div class="empty-emoji">📅</div><p>이 달엔 기록이 없어요</p></div>';
+}
+
+function showHistoryDetail(dateKey) {
+  // viewDate를 해당 날짜로 설정하고 오늘 탭으로 이동
+  STATE.viewDate = dateKey;
+  document.getElementById('viewDateInput').value = dateKey;
+  document.getElementById('todayBtn').style.display = 'block';
+  const d = new Date(dateKey + 'T00:00:00');
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('headerDate').textContent =
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  updateRing();
+  showPage('today');
 }
 function changeHistoryMonth(d){
   _historyMonth+=d;
