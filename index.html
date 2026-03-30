@@ -9,383 +9,133 @@
 <meta name="apple-mobile-web-app-title" content="칼로리 기록">
 <link rel="manifest" href="manifest.json">
 <title>칼로리 기록</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --coral: #FF6B6B;
-    --coral-light: #FFE5E5;
-    --coral-dark: #E85555;
-    --mint: #6BCFB0;
-    --mint-light: #E5F9F3;
-    --yellow: #FFD166;
-    --yellow-light: #FFF8E1;
-    --purple: #C77DFF;
-    --purple-light: #F3E5FF;
-    --bg: #FFF9F7;
-    --surface: #FFFFFF;
-    --text: #2D2D2D;
-    --text-muted: #999;
-    --border: #F0E8E8;
-    --shadow: 0 4px 20px rgba(255,107,107,0.1);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
-    padding: 20px 20px 30px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute; bottom: -20px; left: -20px;
-    width: 120px; height: 120px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 50%;
-  }
-  .header::after {
-    content: '';
-    position: absolute; top: -30px; right: -10px;
-    width: 90px; height: 90px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 50%;
-  }
-  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .header-title { font-family: 'Gaegu', cursive; font-size: 24px; color: white; font-weight: 700; }
-  .header-date { color: rgba(255,255,255,0.85); font-size: 13px; }
-  .settings-btn {
-    background: rgba(255,255,255,0.2);
-    border: none; color: white; width: 36px; height: 36px;
-    border-radius: 50%; cursor: pointer; font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  /* ── CALORIE RING ── */
-  .ring-container {
-    display: flex; justify-content: center; align-items: center;
-    margin-bottom: 8px; gap: 24px;
-  }
-  .ring-wrap { position: relative; width: 130px; height: 130px; }
-  .ring-svg { width: 130px; height: 130px; transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: rgba(255,255,255,0.25); stroke-width: 10; }
-  .ring-fill { fill: none; stroke: white; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
-  .ring-center {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    text-align: center;
-  }
-  .ring-cal { font-size: 22px; font-weight: 700; color: white; line-height: 1; }
-  .ring-label { font-size: 10px; color: rgba(255,255,255,0.8); margin-top: 2px; }
-  .ring-stats { display: flex; flex-direction: column; gap: 8px; }
-  .ring-stat { background: rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 14px; text-align: center; min-width: 80px; }
-  .ring-stat-val { font-size: 16px; font-weight: 700; color: white; }
-  .ring-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.8); }
-
-  /* ── NAV TABS ── */
-  .nav {
-    display: flex; background: white;
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  .nav-btn {
-    flex: 1; padding: 12px 4px; border: none; background: none;
-    font-family: 'Noto Sans KR', sans-serif; font-size: 12px;
-    color: var(--text-muted); cursor: pointer; transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-  }
-  .nav-btn.active { color: var(--coral); font-weight: 700; }
-  .nav-btn .nav-icon { font-size: 18px; }
-  .nav-btn.active::after {
-    content: ''; display: block; height: 2px; width: 20px;
-    background: var(--coral); border-radius: 2px; margin-top: 2px;
-  }
-
-  /* ── PAGES ── */
-  .page { display: none; padding: 16px; padding-bottom: 80px; }
-  .page.active { display: block; }
-
-  /* ── SEARCH ── */
-  .search-bar {
-    display: flex; gap: 8px; margin-bottom: 16px;
-  }
-  .search-input {
-    flex: 1; padding: 12px 16px; border: 2px solid var(--border);
-    border-radius: 16px; font-family: 'Noto Sans KR', sans-serif;
-    font-size: 14px; background: white; outline: none;
-    transition: border-color 0.2s;
-  }
-  .search-input:focus { border-color: var(--coral); }
-  .search-btn {
-    background: var(--coral); color: white; border: none;
-    border-radius: 14px; padding: 12px 18px; font-size: 14px;
-    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 500; transition: transform 0.1s;
-    white-space: nowrap;
-  }
-  .search-btn:active { transform: scale(0.95); }
-
-  /* ── FOOD RESULT CARD ── */
-  .food-card {
-    background: white; border-radius: 16px; padding: 14px 16px;
-    margin-bottom: 10px; box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 12px; cursor: pointer;
-    transition: transform 0.15s;
-    border: 2px solid transparent;
-  }
-  .food-card:active { transform: scale(0.98); }
-  .food-card.selected { border-color: var(--coral); background: var(--coral-light); }
-  .food-emoji { font-size: 28px; width: 44px; text-align: center; }
-  .food-info { flex: 1; }
-  .food-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-  .food-detail { font-size: 12px; color: var(--text-muted); }
-  .food-kcal { font-size: 18px; font-weight: 700; color: var(--coral); white-space: nowrap; }
-  .food-kcal span { font-size: 11px; font-weight: 400; }
-
-  /* ── MEAL TYPE ── */
-  .meal-type-row {
-    display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;
-  }
-  .meal-type-btn {
-    flex: 1; min-width: 60px; padding: 10px 8px; border: 2px solid var(--border);
-    border-radius: 14px; background: white; font-family: 'Noto Sans KR', sans-serif;
-    font-size: 12px; cursor: pointer; text-align: center; transition: all 0.2s;
-  }
-  .meal-type-btn.active {
-    border-color: var(--coral); background: var(--coral-light); color: var(--coral); font-weight: 700;
-  }
-  .meal-type-btn .mt-emoji { display: block; font-size: 18px; margin-bottom: 3px; }
-
-  /* ── AMOUNT INPUT ── */
-  .amount-row {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-    background: white; border-radius: 16px; padding: 12px 16px;
-    box-shadow: var(--shadow);
-  }
-  .amount-label { font-size: 13px; color: var(--text-muted); white-space: nowrap; }
-  .amount-input {
-    flex: 1; border: 2px solid var(--border); border-radius: 10px;
-    padding: 8px 12px; font-size: 16px; text-align: center;
-    font-family: 'Noto Sans KR', sans-serif; outline: none;
-    transition: border-color 0.2s;
-  }
-  .amount-input:focus { border-color: var(--coral); }
-  .amount-unit { font-size: 13px; color: var(--text-muted); }
-
-  /* ── ADD BTN ── */
-  .add-food-btn {
-    width: 100%; padding: 15px; background: linear-gradient(135deg, var(--coral), var(--coral-dark));
-    color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700;
-    font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: transform 0.1s;
-    margin-bottom: 20px;
-  }
-  .add-food-btn:active { transform: scale(0.98); }
-  .add-food-btn:disabled { background: #ccc; cursor: not-allowed; }
-
-  /* ── TODAY MEALS ── */
-  .section-title {
-    font-size: 15px; font-weight: 700; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .meal-group { margin-bottom: 16px; }
-  .meal-group-header {
-    font-size: 12px; color: var(--text-muted); font-weight: 500;
-    margin-bottom: 8px; padding-left: 4px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .meal-item {
-    background: white; border-radius: 14px; padding: 12px 14px;
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  .meal-item-emoji { font-size: 22px; }
-  .meal-item-info { flex: 1; }
-  .meal-item-name { font-size: 13px; font-weight: 600; }
-  .meal-item-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .meal-item-kcal { font-size: 14px; font-weight: 700; color: var(--coral); }
-  .meal-item-del {
-    background: none; border: none; color: var(--text-muted);
-    font-size: 16px; cursor: pointer; padding: 4px;
-  }
-
-  /* ── NUTRIENT BAR ── */
-  .nutrient-section { background: white; border-radius: 16px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px; }
-  .nutrient-row { margin-bottom: 12px; }
-  .nutrient-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .nutrient-name { font-size: 13px; font-weight: 500; }
-  .nutrient-val { font-size: 12px; color: var(--text-muted); }
-  .nutrient-bar-bg { height: 8px; background: #F5F5F5; border-radius: 4px; overflow: hidden; }
-  .nutrient-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
-
-  /* ── WATER ── */
-  .water-section {
-    background: linear-gradient(135deg, #74B9FF, #0984E3);
-    border-radius: 16px; padding: 16px; margin-bottom: 16px;
-    color: white;
-  }
-  .water-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
-  .water-glasses { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-  .water-glass {
-    width: 36px; height: 36px; border-radius: 10px;
-    background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3);
-    font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .water-glass.filled { background: rgba(255,255,255,0.5); border-color: white; }
-  .water-info { font-size: 11px; opacity: 0.8; }
-
-  /* ── HISTORY PAGE ── */
-  .date-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    background: white; border-radius: 16px; padding: 12px 16px;
-    box-shadow: var(--shadow); margin-bottom: 16px;
-  }
-  .date-nav-btn {
-    background: none; border: none; font-size: 20px; cursor: pointer; color: var(--coral);
-    padding: 4px 8px;
-  }
-  .date-nav-text { font-size: 15px; font-weight: 700; }
-  .history-day {
-    background: white; border-radius: 16px; padding: 14px 16px;
-    margin-bottom: 12px; box-shadow: var(--shadow);
-  }
-  .history-day-head {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px;
-  }
-  .history-day-date { font-size: 13px; font-weight: 700; }
-  .history-day-kcal { font-size: 14px; font-weight: 700; color: var(--coral); }
-  .history-progress-bg {
-    height: 6px; background: #F5F5F5; border-radius: 3px; overflow: hidden; margin-bottom: 8px;
-  }
-  .history-progress-fill { height: 100%; background: var(--coral); border-radius: 3px; }
-  .history-foods { font-size: 12px; color: var(--text-muted); }
-
-  /* ── STATS PAGE ── */
-  .stat-card {
-    background: white; border-radius: 16px; padding: 16px;
-    box-shadow: var(--shadow); margin-bottom: 14px;
-  }
-  .stat-card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-  .weekly-bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
-  .wbar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .wbar {
-    width: 100%; border-radius: 6px 6px 0 0; min-height: 4px;
-    transition: height 0.8s ease; position: relative;
-  }
-  .wbar-label { font-size: 10px; color: var(--text-muted); }
-  .wbar-val { font-size: 9px; color: var(--text-muted); }
-
-  /* ── FAVORITES ── */
-  .fav-item {
-    background: white; border-radius: 14px; padding: 12px 14px;
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 8px; box-shadow: var(--shadow);
-  }
-  .fav-emoji { font-size: 24px; }
-  .fav-info { flex: 1; }
-  .fav-name { font-size: 13px; font-weight: 600; }
-  .fav-kcal { font-size: 12px; color: var(--coral); font-weight: 600; margin-top: 2px; }
-  .fav-add-btn {
-    background: var(--coral); color: white; border: none;
-    border-radius: 10px; padding: 7px 12px; font-size: 13px;
-    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-  }
-  .fav-del-btn {
-    background: none; border: none; font-size: 16px; cursor: pointer; color: #ccc;
-  }
-
-  /* ── SETTINGS PAGE ── */
-  .settings-group { background: white; border-radius: 16px; margin-bottom: 14px; overflow: hidden; box-shadow: var(--shadow); }
-  .settings-group-title { padding: 12px 16px; font-size: 12px; color: var(--text-muted); font-weight: 500; background: #FAFAFA; border-bottom: 1px solid var(--border); }
-  .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .settings-item:last-child { border-bottom: none; }
-  .settings-label { font-size: 14px; font-weight: 500; }
-  .settings-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .settings-input {
-    border: 2px solid var(--border); border-radius: 10px; padding: 7px 12px;
-    font-size: 14px; font-family: 'Noto Sans KR', sans-serif;
-    width: 100px; text-align: center; outline: none;
-  }
-  .settings-input:focus { border-color: var(--coral); }
-  .settings-save {
-    width: 100%; padding: 15px; background: var(--coral); color: white;
-    border: none; border-radius: 16px; font-size: 15px; font-weight: 700;
-    font-family: 'Noto Sans KR', sans-serif; cursor: pointer; margin-top: 4px;
-  }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: #2D2D2D; color: white; padding: 12px 20px;
-    border-radius: 20px; font-size: 13px; font-weight: 500;
-    opacity: 0; transition: all 0.3s; z-index: 9999; white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.warn { background: #FF6B6B; }
-  .toast.success { background: #6BCFB0; }
-
-  /* ── BINGE WARNING ── */
-  .binge-banner {
-    background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
-    color: white; border-radius: 16px; padding: 14px 16px;
-    margin-bottom: 14px; display: none; align-items: center; gap: 12px;
-    animation: pulse 1.5s infinite;
-  }
-  .binge-banner.show { display: flex; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.85} }
-  .binge-icon { font-size: 28px; }
-  .binge-text { flex: 1; font-size: 13px; font-weight: 500; }
-
-  /* ── EMPTY STATE ── */
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-  .empty-state .empty-emoji { font-size: 48px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-
-  /* ── LOADING ── */
-  .loading { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; }
-  .loading::after { content: ''; animation: dots 1.2s infinite; }
-  @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
-
-  /* ── FAB ── */
-  .fab {
-    position: fixed; bottom: 74px; right: 20px;
-    width: 52px; height: 52px; background: var(--coral);
-    border-radius: 50%; border: none; color: white; font-size: 24px;
-    box-shadow: 0 4px 16px rgba(255,107,107,0.4); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s;
-    z-index: 50;
-  }
-  .fab:active { transform: scale(0.9); }
-  .fab.hidden { display: none; }
+:root{--coral:#FF6B6B;--coral-light:#FFE5E5;--coral-dark:#E85555;--mint:#6BCFB0;--mint-light:#E5F9F3;--yellow:#FFD166;--yellow-light:#FFF8E1;--purple:#C77DFF;--bg:#FFF9F7;--text:#2D2D2D;--muted:#999;--border:#F0E8E8;--shadow:0 4px 20px rgba(255,107,107,.1)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.header{background:linear-gradient(135deg,#FF6B6B,#FF8E8E);padding:20px 20px 28px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;bottom:-20px;left:-20px;width:120px;height:120px;background:rgba(255,255,255,.1);border-radius:50%}
+.header::after{content:'';position:absolute;top:-30px;right:-10px;width:90px;height:90px;background:rgba(255,255,255,.08);border-radius:50%}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.header-title{font-family:'Gaegu',cursive;font-size:24px;color:#fff;font-weight:700}
+.header-date{color:rgba(255,255,255,.85);font-size:13px}
+.settings-btn{background:rgba(255,255,255,.25);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:10;touch-action:manipulation}
+.ring-container{display:flex;justify-content:center;align-items:center;gap:20px}
+.ring-wrap{position:relative;width:120px;height:120px;flex-shrink:0}
+.ring-svg{width:120px;height:120px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.25);stroke-width:9}
+.ring-fill{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-cal{font-size:20px;font-weight:700;color:#fff;line-height:1}
+.ring-label{font-size:10px;color:rgba(255,255,255,.8);margin-top:2px}
+.ring-stats{display:flex;flex-direction:column;gap:7px}
+.ring-stat{background:rgba(255,255,255,.2);border-radius:12px;padding:7px 12px;text-align:center;min-width:78px}
+.ring-stat-val{font-size:15px;font-weight:700;color:#fff}
+.ring-stat-lbl{font-size:10px;color:rgba(255,255,255,.8)}
+.nav{display:flex;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.nav-btn{flex:1;padding:11px 2px;border:none;background:none;font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;touch-action:manipulation}
+.nav-btn.active{color:var(--coral);font-weight:700}
+.nav-icon{font-size:17px}
+.nav-btn.active::after{content:'';display:block;height:2px;width:18px;background:var(--coral);border-radius:2px;margin-top:2px}
+.page{display:none;padding:16px;padding-bottom:90px}
+.page.active{display:block}
+/* SETTINGS OVERLAY */
+.settings-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px 16px 100px}
+.settings-overlay.open{display:block}
+.settings-back{background:none;border:none;font-size:22px;cursor:pointer;margin-bottom:16px;color:var(--text);display:flex;align-items:center;gap:8px;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:500;touch-action:manipulation}
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-input{flex:1;padding:12px 16px;border:2px solid var(--border);border-radius:16px;font-family:'Noto Sans KR',sans-serif;font-size:14px;background:#fff;outline:none;transition:border-color .2s}
+.search-input:focus{border-color:var(--coral)}
+.search-btn{background:var(--coral);color:#fff;border:none;border-radius:14px;padding:12px 16px;font-size:14px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;white-space:nowrap;touch-action:manipulation}
+.food-card{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;cursor:pointer;transition:transform .15s;border:2px solid transparent}
+.food-card.selected{border-color:var(--coral);background:var(--coral-light)}
+.food-emoji{font-size:26px;width:40px;text-align:center}
+.food-info{flex:1}
+.food-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.food-detail{font-size:12px;color:var(--muted)}
+.food-kcal{font-size:18px;font-weight:700;color:var(--coral);white-space:nowrap}
+.food-kcal span{font-size:11px;font-weight:400}
+.meal-type-row{display:flex;gap:7px;margin-bottom:14px}
+.meal-type-btn{flex:1;padding:9px 4px;border:2px solid var(--border);border-radius:14px;background:#fff;font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;text-align:center;transition:all .2s;touch-action:manipulation}
+.meal-type-btn.active{border-color:var(--coral);background:var(--coral-light);color:var(--coral);font-weight:700}
+.mt-emoji{display:block;font-size:17px;margin-bottom:3px}
+.amount-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow)}
+.amount-label{font-size:13px;color:var(--muted);white-space:nowrap}
+.amount-input{flex:1;border:2px solid var(--border);border-radius:10px;padding:8px 12px;font-size:16px;text-align:center;font-family:'Noto Sans KR',sans-serif;outline:none}
+.amount-input:focus{border-color:var(--coral)}
+.amount-unit{font-size:13px;color:var(--muted)}
+.add-food-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--coral),var(--coral-dark));color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:20px;touch-action:manipulation}
+.section-title{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.meal-group{margin-bottom:16px}
+.meal-group-header{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;padding-left:4px}
+.meal-item{background:#fff;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.meal-item-emoji{font-size:22px}
+.meal-item-info{flex:1}
+.meal-item-name{font-size:13px;font-weight:600}
+.meal-item-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.meal-item-kcal{font-size:14px;font-weight:700;color:var(--coral)}
+.meal-item-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px;touch-action:manipulation}
+.nutrient-section{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.nutrient-row{margin-bottom:12px}
+.nutrient-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.nutrient-name{font-size:13px;font-weight:500}
+.nutrient-val{font-size:12px;color:var(--muted)}
+.nutrient-bar-bg{height:8px;background:#F5F5F5;border-radius:4px;overflow:hidden}
+.nutrient-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.water-section{background:linear-gradient(135deg,#74B9FF,#0984E3);border-radius:16px;padding:16px;margin-bottom:16px;color:#fff}
+.water-glasses{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.water-glass{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;touch-action:manipulation}
+.water-glass.filled{background:rgba(255,255,255,.5);border-color:#fff}
+.stat-card{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.stat-card-title{font-size:14px;font-weight:700;margin-bottom:14px}
+.weekly-bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px}
+.wbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.wbar{width:100%;border-radius:6px 6px 0 0;min-height:4px;transition:height .8s ease}
+.wbar-label{font-size:10px;color:var(--muted)}
+.wbar-val{font-size:9px;color:var(--muted)}
+.date-nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;padding:12px 16px;box-shadow:var(--shadow);margin-bottom:16px}
+.date-nav-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--coral);padding:4px 10px;touch-action:manipulation}
+.history-day{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.settings-group{background:#fff;border-radius:16px;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.settings-group-title{padding:12px 16px;font-size:12px;color:var(--muted);font-weight:500;background:#FAFAFA;border-bottom:1px solid var(--border)}
+.settings-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);gap:10px}
+.settings-item:last-child{border-bottom:none}
+.settings-label{font-size:14px;font-weight:500}
+.settings-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.settings-input{border:2px solid var(--border);border-radius:10px;padding:7px 10px;font-size:14px;font-family:'Noto Sans KR',sans-serif;width:88px;text-align:center;outline:none;flex-shrink:0}
+.settings-input:focus{border-color:var(--coral)}
+.settings-save{width:100%;padding:15px;background:var(--coral);color:#fff;border:none;border-radius:16px;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:14px;touch-action:manipulation}
+.backup-btn{width:100%;padding:13px;border:2px solid var(--border);background:#fff;border-radius:14px;font-size:14px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:10px;color:var(--text);touch-action:manipulation}
+.binge-banner{background:linear-gradient(135deg,#FF6B6B,#FF8E8E);color:#fff;border-radius:16px;padding:14px 16px;margin-bottom:14px;display:none;align-items:center;gap:12px;animation:pulse 1.5s infinite}
+.binge-banner.show{display:flex}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.85}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-emoji{font-size:48px;margin-bottom:12px}
+.loading{text-align:center;padding:20px;color:var(--muted);font-size:13px}
+.loading::after{content:'';animation:dots 1.2s infinite}
+@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:#2D2D2D;color:#fff;padding:12px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:9999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.warn{background:#FF6B6B}
+.toast.success{background:#6BCFB0}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="header-top">
     <div>
       <div class="header-title">🍱 오늘 뭐먹었니?</div>
       <div class="header-date" id="headerDate"></div>
     </div>
-    <button class="settings-btn" onclick="goSettings()">⚙️</button>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
   </div>
   <div class="ring-container">
     <div class="ring-wrap">
-      <svg class="ring-svg" viewBox="0 0 130 130">
-        <circle class="ring-bg" cx="65" cy="65" r="52"/>
-        <circle class="ring-fill" id="ringFill" cx="65" cy="65" r="52"
-          stroke-dasharray="327" stroke-dashoffset="327"/>
+      <svg class="ring-svg" viewBox="0 0 120 120">
+        <circle class="ring-bg" cx="60" cy="60" r="50"/>
+        <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
       </svg>
       <div class="ring-center">
         <div class="ring-cal" id="ringCal">0</div>
@@ -397,7 +147,7 @@
         <div class="ring-stat-val" id="statGoal">-</div>
         <div class="ring-stat-lbl">목표</div>
       </div>
-      <div class="ring-stat" style="background:rgba(107,207,176,0.35)">
+      <div class="ring-stat" style="background:rgba(107,207,176,.35)">
         <div class="ring-stat-val" id="statBurn">-0</div>
         <div class="ring-stat-lbl">운동 소모</div>
       </div>
@@ -409,62 +159,34 @@
   </div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
-  <button class="nav-btn active" onclick="showPage('search')">
-    <span class="nav-icon">🔍</span>검색
-  </button>
-  <button class="nav-btn" onclick="showPage('today')">
-    <span class="nav-icon">📋</span>오늘
-  </button>
-  <button class="nav-btn" onclick="showPage('stats')">
-    <span class="nav-icon">📊</span>통계
-  </button>
-  <button class="nav-btn" onclick="showPage('history')">
-    <span class="nav-icon">📅</span>기록
-  </button>
-  <button class="nav-btn" onclick="showPage('exercise')">
-    <span class="nav-icon">🏃</span>운동
-  </button>
-  <button class="nav-btn" onclick="showPage('favorites')">
-    <span class="nav-icon">⭐</span>즐겨찾기
-  </button>
+  <button class="nav-btn active" id="navSearch" onclick="showPage('search')"><span class="nav-icon">🔍</span>검색</button>
+  <button class="nav-btn" id="navToday" onclick="showPage('today')"><span class="nav-icon">📋</span>오늘</button>
+  <button class="nav-btn" id="navStats" onclick="showPage('stats')"><span class="nav-icon">📊</span>통계</button>
+  <button class="nav-btn" id="navHistory" onclick="showPage('history')"><span class="nav-icon">📅</span>기록</button>
+  <button class="nav-btn" id="navExercise" onclick="showPage('exercise')"><span class="nav-icon">🏃</span>운동</button>
+  <button class="nav-btn" id="navFavorites" onclick="showPage('favorites')"><span class="nav-icon">⭐</span>즐겨찾기</button>
 </div>
 
-<!-- ── PAGE: SEARCH ── -->
+<!-- PAGE: SEARCH -->
 <div class="page active" id="page-search">
   <div class="binge-banner" id="bingeBanner">
-    <span class="binge-icon">⚠️</span>
-    <div class="binge-text">
-      <strong>폭식 주의!</strong><br>
-      <span id="bingeText"></span>
-    </div>
+    <span style="font-size:28px">⚠️</span>
+    <div style="flex:1;font-size:13px;font-weight:500"><strong>폭식 주의!</strong><br><span id="bingeText"></span></div>
   </div>
-
   <div class="search-bar">
-    <input class="search-input" id="searchInput" placeholder="음식 이름을 입력하세요 (예: 비빔밥)"
-      onkeydown="if(event.key==='Enter')searchFood()">
+    <input class="search-input" id="searchInput" placeholder="음식 이름 (예: 비빔밥, 삼겹살)" onkeydown="if(event.key==='Enter')searchFood()">
     <button class="search-btn" onclick="searchFood()">검색</button>
   </div>
-
   <div id="searchLoading" style="display:none" class="loading">AI가 칼로리 찾는 중</div>
   <div id="searchResults"></div>
-
   <div id="addSection" style="display:none">
     <div class="section-title">🍽️ 식사 종류</div>
     <div class="meal-type-row">
-      <button class="meal-type-btn active" onclick="selectMealType('아침',this)">
-        <span class="mt-emoji">🌅</span>아침
-      </button>
-      <button class="meal-type-btn" onclick="selectMealType('점심',this)">
-        <span class="mt-emoji">☀️</span>점심
-      </button>
-      <button class="meal-type-btn" onclick="selectMealType('저녁',this)">
-        <span class="mt-emoji">🌙</span>저녁
-      </button>
-      <button class="meal-type-btn" onclick="selectMealType('간식',this)">
-        <span class="mt-emoji">🍪</span>간식
-      </button>
+      <button class="meal-type-btn active" onclick="selectMealType('아침',this)"><span class="mt-emoji">🌅</span>아침</button>
+      <button class="meal-type-btn" onclick="selectMealType('점심',this)"><span class="mt-emoji">☀️</span>점심</button>
+      <button class="meal-type-btn" onclick="selectMealType('저녁',this)"><span class="mt-emoji">🌙</span>저녁</button>
+      <button class="meal-type-btn" onclick="selectMealType('간식',this)"><span class="mt-emoji">🍪</span>간식</button>
     </div>
     <div class="amount-row">
       <span class="amount-label">양</span>
@@ -473,92 +195,75 @@
     </div>
     <button class="add-food-btn" onclick="addFoodToLog()">➕ 식단에 추가하기</button>
   </div>
-
-  <!-- WATER -->
   <div class="water-section">
-    <div class="water-title">💧 수분 섭취</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px">💧 수분 섭취</div>
     <div class="water-glasses" id="waterGlasses"></div>
-    <div class="water-info" id="waterInfo"></div>
+    <div style="font-size:11px;opacity:.8" id="waterInfo"></div>
   </div>
 </div>
 
-<!-- ── PAGE: TODAY ── -->
+<!-- PAGE: TODAY -->
 <div class="page" id="page-today">
-  <div id="todayNutrient" class="nutrient-section" style="margin-bottom:16px">
+  <div class="nutrient-section">
     <div class="section-title">🥗 오늘의 영양소</div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🍞 탄수화물</span><span class="nutrient-val" id="carbVal">0 / 130g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">🍞 탄수화물</span><span class="nutrient-val" id="carbVal">0/130g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="carbBar" style="width:0%;background:#FFD166"></div></div>
     </div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🥩 단백질</span><span class="nutrient-val" id="proteinVal">0 / 50g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">🥩 단백질</span><span class="nutrient-val" id="proteinVal">0/50g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="proteinBar" style="width:0%;background:#6BCFB0"></div></div>
     </div>
     <div class="nutrient-row">
-      <div class="nutrient-head"><span class="nutrient-name">🧈 지방</span><span class="nutrient-val" id="fatVal">0 / 44g</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">🧈 지방</span><span class="nutrient-val" id="fatVal">0/44g</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="fatBar" style="width:0%;background:#C77DFF"></div></div>
     </div>
     <div class="nutrient-row" style="margin-bottom:0">
-      <div class="nutrient-head"><span class="nutrient-name">🧂 나트륨</span><span class="nutrient-val" id="sodiumVal">0 / 2000mg</span></div>
+      <div class="nutrient-head"><span class="nutrient-name">🧂 나트륨</span><span class="nutrient-val" id="sodiumVal">0/2000mg</span></div>
       <div class="nutrient-bar-bg"><div class="nutrient-bar-fill" id="sodiumBar" style="width:0%;background:#FF6B6B"></div></div>
     </div>
   </div>
   <div id="todayMeals"></div>
 </div>
 
-<!-- ── PAGE: STATS ── -->
+<!-- PAGE: STATS -->
 <div class="page" id="page-stats">
-  <div class="stat-card">
-    <div class="stat-card-title">📈 이번 주 칼로리</div>
-    <div class="weekly-bar-chart" id="weeklyChart"></div>
-  </div>
-  <div class="stat-card" id="nutritionPieCard">
-    <div class="stat-card-title">🥗 평균 영양소 비율</div>
-    <div id="nutrientPie" style="display:flex;gap:10px;flex-wrap:wrap"></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-card-title">🏅 이번 주 요약</div>
-    <div id="weeklySummary"></div>
-  </div>
+  <div class="stat-card"><div class="stat-card-title">📈 이번 주 칼로리</div><div class="weekly-bar-chart" id="weeklyChart"></div></div>
+  <div class="stat-card"><div class="stat-card-title">🥗 평균 영양소 비율</div><div id="nutrientPie" style="display:flex;gap:10px;flex-wrap:wrap"></div></div>
+  <div class="stat-card"><div class="stat-card-title">🏅 이번 주 요약</div><div id="weeklySummary"></div></div>
 </div>
 
-<!-- ── PAGE: HISTORY ── -->
+<!-- PAGE: HISTORY -->
 <div class="page" id="page-history">
   <div class="date-nav">
     <button class="date-nav-btn" onclick="changeHistoryMonth(-1)">‹</button>
-    <span class="date-nav-text" id="historyMonthLabel"></span>
+    <span style="font-size:15px;font-weight:700" id="historyMonthLabel"></span>
     <button class="date-nav-btn" onclick="changeHistoryMonth(1)">›</button>
   </div>
   <div id="historyList"></div>
 </div>
 
-<!-- ── PAGE: EXERCISE ── -->
+<!-- PAGE: EXERCISE -->
 <div class="page" id="page-exercise">
   <div class="search-bar">
-    <input class="search-input" id="exerciseInput" placeholder="운동 이름 (예: 걷기, 줄넘기, 수영)"
-      onkeydown="if(event.key==='Enter')searchExercise()">
+    <input class="search-input" id="exerciseInput" placeholder="운동 이름 (예: 걷기, 줄넘기, 수영)" onkeydown="if(event.key==='Enter')searchExercise()">
     <button class="search-btn" onclick="searchExercise()">검색</button>
   </div>
   <div id="exerciseLoading" style="display:none" class="loading">AI가 소모 칼로리 계산 중</div>
   <div id="exerciseResults"></div>
-
   <div id="exerciseAddSection" style="display:none">
     <div class="amount-row">
       <span class="amount-label">⏱️ 운동 시간</span>
       <input class="amount-input" id="exerciseMinutes" type="number" value="30" min="1" step="5">
       <span class="amount-unit">분</span>
     </div>
-    <button class="add-food-btn" style="background:linear-gradient(135deg,#6BCFB0,#45B896)" onclick="addExerciseToLog()">
-      🏃 운동 기록하기
-    </button>
+    <button class="add-food-btn" style="background:linear-gradient(135deg,#6BCFB0,#45B896)" onclick="addExerciseToLog()">🏃 운동 기록하기</button>
   </div>
-
-  <!-- 오늘 운동 목록 -->
-  <div class="section-title" style="margin-top:8px">💪 오늘 운동 기록</div>
+  <div class="section-title" style="margin-top:4px">💪 오늘 운동 기록</div>
   <div id="todayExerciseList"></div>
 </div>
 
-<!-- ── PAGE: FAVORITES ── -->
+<!-- PAGE: FAVORITES -->
 <div class="page" id="page-favorites">
   <div class="section-title">⭐ 즐겨찾는 음식</div>
   <div id="favList"></div>
@@ -568,699 +273,494 @@
   </div>
 </div>
 
-<!-- ── SETTINGS MODAL ── -->
-<div id="settingsPage" class="page" style="display:none">
+<!-- SETTINGS OVERLAY (독립 레이어, .page 클래스 없음) -->
+<div class="settings-overlay" id="settingsOverlay">
+  <button class="settings-back" onclick="closeSettings()">← 뒤로가기</button>
   <div class="section-title">⚙️ 설정</div>
+
   <div class="settings-group">
     <div class="settings-group-title">내 정보</div>
     <div class="settings-item">
       <div><div class="settings-label">기초대사량</div><div class="settings-sub">인바디 측정값</div></div>
-      <input class="settings-input" id="setBMR" type="number" value="1330"> kcal
+      <div style="display:flex;align-items:center;gap:4px"><input class="settings-input" id="setBMR" type="number" value="1330"><span style="font-size:12px;color:var(--muted)">kcal</span></div>
     </div>
     <div class="settings-item">
       <div><div class="settings-label">목표 칼로리</div><div class="settings-sub">비워두면 기초대사량 사용</div></div>
-      <input class="settings-input" id="setGoal" type="number" placeholder="자동"> kcal
+      <div style="display:flex;align-items:center;gap:4px"><input class="settings-input" id="setGoal" type="number" placeholder="자동"><span style="font-size:12px;color:var(--muted)">kcal</span></div>
     </div>
   </div>
+
   <div class="settings-group">
     <div class="settings-group-title">폭식 경고</div>
     <div class="settings-item">
-      <div><div class="settings-label">한 번에 경고 칼로리</div><div class="settings-sub">한 끼에 이 칼로리 초과 시 알림</div></div>
-      <input class="settings-input" id="setBingeThreshold" type="number" value="800"> kcal
+      <div><div class="settings-label">한 끼 경고 기준</div><div class="settings-sub">이 칼로리 초과 시 알림</div></div>
+      <div style="display:flex;align-items:center;gap:4px"><input class="settings-input" id="setBingeThreshold" type="number" value="800"><span style="font-size:12px;color:var(--muted)">kcal</span></div>
     </div>
   </div>
+
   <button class="settings-save" onclick="saveSettings()">💾 저장하기</button>
+
+  <div class="settings-group">
+    <div class="settings-group-title">📦 데이터 백업 / 복원</div>
+    <div style="padding:14px 16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px">모든 식단·운동 기록을 JSON 파일로 내보내거나 가져올 수 있어요.<br>맥북↔폰 데이터 이동에도 활용할 수 있어요 📲</p>
+      <button class="backup-btn" onclick="exportData()">📤 데이터 내보내기 (JSON)</button>
+      <button class="backup-btn" onclick="document.getElementById('importFile').click()">📥 데이터 가져오기 (JSON)</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="backup-btn" style="color:#FF6B6B;border-color:#FFCDD2" onclick="confirmReset()">🗑️ 모든 데이터 초기화</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────
 const STATE = {
-  bmr: 1330,
-  goalKcal: null,
-  bingeThreshold: 800,
-  selectedFood: null,
-  selectedMealType: '아침',
-  historyMonth: new Date(),
+  bmr:1330, goalKcal:null, bingeThreshold:800,
+  selectedFood:null, selectedMealType:'아침', selectedExercise:null
 };
-
+let _historyYear, _historyMonth;
 const todayKey = () => new Date().toISOString().split('T')[0];
 
-function loadData() {
-  const saved = localStorage.getItem('ct_settings');
-  if (saved) {
-    const s = JSON.parse(saved);
-    STATE.bmr = s.bmr || 1330;
-    STATE.goalKcal = s.goalKcal || null;
-    STATE.bingeThreshold = s.bingeThreshold || 800;
-  }
+// Storage
+function getLogs()    { return JSON.parse(localStorage.getItem('ct_logs')||'{}'); }
+function saveLogs(l)  { localStorage.setItem('ct_logs',JSON.stringify(l)); }
+function getTodayLogs()       { return getLogs()[todayKey()]||[]; }
+function saveTodayLogs(items) { const l=getLogs(); l[todayKey()]=items; saveLogs(l); }
+function getFavs()    { return JSON.parse(localStorage.getItem('ct_favs')||'[]'); }
+function saveFavs(f)  { localStorage.setItem('ct_favs',JSON.stringify(f)); }
+function getWater()   { return (JSON.parse(localStorage.getItem('ct_water')||'{}'))[todayKey()]||0; }
+function saveWater(n) { const w=JSON.parse(localStorage.getItem('ct_water')||'{}'); w[todayKey()]=n; localStorage.setItem('ct_water',JSON.stringify(w)); }
+function getExLogs()          { return JSON.parse(localStorage.getItem('ct_exercise')||'{}'); }
+function saveExLogs(l)        { localStorage.setItem('ct_exercise',JSON.stringify(l)); }
+function getTodayExLogs()     { return getExLogs()[todayKey()]||[]; }
+function saveTodayExLogs(items){ const l=getExLogs(); l[todayKey()]=items; saveExLogs(l); }
+
+function loadSettings() {
+  const s=JSON.parse(localStorage.getItem('ct_settings')||'{}');
+  STATE.bmr=s.bmr||1330; STATE.goalKcal=s.goalKcal||null; STATE.bingeThreshold=s.bingeThreshold||800;
 }
 
-function getLogs() {
-  return JSON.parse(localStorage.getItem('ct_logs') || '{}');
-}
-function saveLogs(logs) {
-  localStorage.setItem('ct_logs', JSON.stringify(logs));
-}
-function getTodayLogs() {
-  const logs = getLogs();
-  return logs[todayKey()] || [];
-}
-function saveTodayLogs(items) {
-  const logs = getLogs();
-  logs[todayKey()] = items;
-  saveLogs(logs);
-}
-
-function getFavs() { return JSON.parse(localStorage.getItem('ct_favs') || '[]'); }
-function saveFavs(f) { localStorage.setItem('ct_favs', JSON.stringify(f)); }
-
-function getWater() {
-  const w = JSON.parse(localStorage.getItem('ct_water') || '{}');
-  return w[todayKey()] || 0;
-}
-function saveWater(n) {
-  const w = JSON.parse(localStorage.getItem('ct_water') || '{}');
-  w[todayKey()] = n;
-  localStorage.setItem('ct_water', JSON.stringify(w));
-}
-
-// ─── INIT ───────────────────────────────────────────────
-window.onload = () => {
-  loadData();
-  updateHeader();
-  renderWater();
-  updateRing();
-  applySettings();
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/calorie/sw.js').catch(() => {});
-  }
-};
-
-function applySettings() {
-  document.getElementById('setBMR').value = STATE.bmr;
-  document.getElementById('setGoal').value = STATE.goalKcal || '';
-  document.getElementById('setBingeThreshold').value = STATE.bingeThreshold;
-}
-
-function updateHeader() {
-  const now = new Date();
-  const days = ['일','월','화','수','목','금','토'];
-  document.getElementById('headerDate').textContent =
+window.addEventListener('load', () => {
+  loadSettings();
+  // 날짜 표시
+  const now=new Date(); const days=['일','월','화','수','목','금','토'];
+  document.getElementById('headerDate').textContent=
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
-}
+  renderWater(); updateRing();
+  // 설정 버튼
+  document.getElementById('settingsBtn').addEventListener('click', openSettings);
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('/calorie/sw.js').catch(()=>{});
+});
 
-// ─── RING ───────────────────────────────────────────────
-function getGoalKcal() { return STATE.goalKcal || STATE.bmr; }
+function getGoalKcal() { return STATE.goalKcal||STATE.bmr; }
 
 function updateRing() {
-  const today = getTodayLogs();
-  const total = today.reduce((s, i) => s + i.kcal, 0);
-  const burned = getTodayExerciseLogs().reduce((s, i) => s + i.burned, 0);
-  const goal = getGoalKcal();
-  const net = total - burned;
-  const left = goal - net;
-  const pct = Math.min(net / goal, 1);
-  const circumference = 327;
-
-  document.getElementById('ringCal').textContent = total.toLocaleString();
+  const total  = getTodayLogs().reduce((s,i)=>s+i.kcal,0);
+  const burned = getTodayExLogs().reduce((s,i)=>s+i.burned,0);
+  const goal   = getGoalKcal();
+  const net    = total-burned;
+  const left   = goal-net;
+  const pct    = Math.min(Math.max(net/goal,0),1);
+  document.getElementById('ringCal').textContent  = total.toLocaleString();
   document.getElementById('statGoal').textContent = goal.toLocaleString();
-  document.getElementById('statBurn').textContent = '-' + burned.toLocaleString();
-  document.getElementById('statLeft').textContent = (left > 0 ? '' : '') + left.toLocaleString();
-  document.getElementById('ringFill').style.strokeDashoffset = circumference * (1 - Math.max(pct, 0));
+  document.getElementById('statBurn').textContent = '-'+burned.toLocaleString();
+  document.getElementById('statLeft').textContent = left>=0 ? left.toLocaleString() : '초과 '+Math.abs(left).toLocaleString();
+  document.getElementById('ringFill').style.strokeDashoffset = 314*(1-pct);
+  document.getElementById('ringFill').style.stroke = net>=goal ? '#FFD166' : 'white';
+}
 
-  if (net >= goal) {
-    document.getElementById('ringFill').style.stroke = '#FFD166';
-    document.getElementById('statLeft').textContent = '초과 ' + Math.abs(left).toLocaleString();
-  } else {
-    document.getElementById('ringFill').style.stroke = 'white';
+// Navigation
+const PAGES = ['search','today','stats','history','exercise','favorites'];
+function showPage(name) {
+  PAGES.forEach(p => {
+    const el=document.getElementById('page-'+p);
+    if(el){el.classList.remove('active');el.style.display='none';}
+    const nb=document.getElementById('nav'+p.charAt(0).toUpperCase()+p.slice(1));
+    if(nb) nb.classList.remove('active');
+  });
+  const pg=document.getElementById('page-'+name);
+  if(pg){pg.classList.add('active');pg.style.display='block';}
+  const nb=document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1));
+  if(nb) nb.classList.add('active');
+  if(name==='today')     renderToday();
+  if(name==='stats')     renderStats();
+  if(name==='history')   renderHistory();
+  if(name==='favorites') renderFavorites();
+  if(name==='exercise')  renderTodayExercise();
+}
+
+function openSettings() {
+  document.getElementById('setBMR').value=STATE.bmr;
+  document.getElementById('setGoal').value=STATE.goalKcal||'';
+  document.getElementById('setBingeThreshold').value=STATE.bingeThreshold;
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
+
+function saveSettings() {
+  STATE.bmr=parseInt(document.getElementById('setBMR').value)||1330;
+  STATE.goalKcal=parseInt(document.getElementById('setGoal').value)||null;
+  STATE.bingeThreshold=parseInt(document.getElementById('setBingeThreshold').value)||800;
+  localStorage.setItem('ct_settings',JSON.stringify({bmr:STATE.bmr,goalKcal:STATE.goalKcal,bingeThreshold:STATE.bingeThreshold}));
+  updateRing();
+  showToast('✅ 설정 저장됐어요!','success');
+}
+
+// Backup
+function exportData() {
+  const data={exported:new Date().toISOString(),version:1,
+    settings:JSON.parse(localStorage.getItem('ct_settings')||'{}'),
+    logs:getLogs(), exercise:getExLogs(), favs:getFavs(),
+    water:JSON.parse(localStorage.getItem('ct_water')||'{}')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=`칼로리기록_백업_${todayKey()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 백업 파일 저장됐어요!','success');
+}
+function importData(e) {
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try {
+      const data=JSON.parse(ev.target.result);
+      if(data.logs)     saveLogs(data.logs);
+      if(data.exercise) saveExLogs(data.exercise);
+      if(data.favs)     saveFavs(data.favs);
+      if(data.water)    localStorage.setItem('ct_water',JSON.stringify(data.water));
+      if(data.settings){localStorage.setItem('ct_settings',JSON.stringify(data.settings));loadSettings();}
+      updateRing(); renderWater();
+      showToast('📥 데이터 가져오기 완료!','success');
+    } catch { showToast('❌ 파일 형식이 올바르지 않아요','warn'); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+function confirmReset() {
+  if(confirm('정말 모든 기록을 삭제할까요?\n되돌릴 수 없어요!')){
+    ['ct_logs','ct_exercise','ct_favs','ct_water'].forEach(k=>localStorage.removeItem(k));
+    updateRing(); renderWater(); showToast('🗑️ 초기화 완료');
   }
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────────
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const pages = ['search','today','stats','history','exercise','favorites'];
-  const idx = pages.indexOf(name);
-  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
-  const pg = document.getElementById('page-'+name);
-  pg.classList.add('active');
-  pg.style.display = 'block';
-  document.getElementById('settingsPage').style.display = 'none';
-
-  if (name === 'today') renderToday();
-  if (name === 'stats') renderStats();
-  if (name === 'history') renderHistory();
-  if (name === 'favorites') renderFavorites();
-  if (name === 'exercise') renderTodayExercise();
+// AI API 공통
+async function callAI(system, userMsg) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:1000,
+      system,
+      messages:[{role:'user',content:userMsg}]
+    })
+  });
+  if(!res.ok) {
+    const err=await res.json().catch(()=>({}));
+    throw new Error(err.error?.message||'API 오류 '+res.status);
+  }
+  const data=await res.json();
+  return data.content.filter(b=>b.type==='text').map(b=>b.text).join('')
+    .replace(/^```json\s*/,'').replace(/\s*```$/,'').trim();
 }
 
-function goSettings() {
-  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('settingsPage').style.display = 'block';
-}
-
-// ─── SEARCH ───────────────────────────────────────────────
-let searchTimeout;
+// Food Search
 async function searchFood() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  document.getElementById('searchLoading').style.display = 'block';
-  document.getElementById('searchResults').innerHTML = '';
-  document.getElementById('addSection').style.display = 'none';
-  STATE.selectedFood = null;
-
+  const q=document.getElementById('searchInput').value.trim(); if(!q) return;
+  document.getElementById('searchLoading').style.display='block';
+  document.getElementById('searchResults').innerHTML='';
+  document.getElementById('addSection').style.display='none';
+  STATE.selectedFood=null;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: `당신은 음식 칼로리 및 영양 정보 전문가입니다. 
-사용자가 음식 이름을 입력하면 해당 음식의 칼로리와 영양 정보를 JSON으로만 응답합니다.
-반드시 JSON만 응답하고 다른 텍스트는 일절 포함하지 마세요.
-응답 형식:
-{"foods":[{"name":"음식명","serving":"1인분(예: 1공기, 1개, 100g)","kcal":숫자,"carb":숫자,"protein":숫자,"fat":숫자,"sodium":숫자,"emoji":"적절한이모지"}]}
-여러 비슷한 음식이나 크기가 다른 경우 2-3개를 배열로 제공하세요.
-숫자는 정수로 반올림하세요. 나트륨은 mg 단위입니다.`,
-        messages: [{ role: 'user', content: `${q}의 칼로리와 영양 정보를 알려주세요.` }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content[0].text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(text);
+    const text=await callAI(
+      '음식 칼로리 영양 전문가. 반드시 JSON만 응답. 형식: {"foods":[{"name":"음식명","serving":"1인분","kcal":숫자,"carb":숫자,"protein":숫자,"fat":숫자,"sodium":숫자,"emoji":"이모지"}]} 2-3개. 숫자는 정수.',
+      q+'의 칼로리와 영양정보'
+    );
+    const parsed=JSON.parse(text);
     renderSearchResults(parsed.foods);
   } catch(e) {
-    document.getElementById('searchResults').innerHTML = `
-      <div style="text-align:center;padding:20px;color:#999;font-size:13px">
-        😥 검색 중 오류가 발생했어요.<br>다시 시도해주세요.
-      </div>`;
+    document.getElementById('searchResults').innerHTML=
+      `<div style="text-align:center;padding:20px;color:#999;font-size:13px">😥 검색 오류: ${e.message}<br>잠시 후 다시 시도해주세요.</div>`;
   }
-  document.getElementById('searchLoading').style.display = 'none';
+  document.getElementById('searchLoading').style.display='none';
 }
 
 function renderSearchResults(foods) {
-  const el = document.getElementById('searchResults');
-  el.innerHTML = '';
-  foods.forEach((food, i) => {
-    const card = document.createElement('div');
-    card.className = 'food-card';
-    card.innerHTML = `
-      <div class="food-emoji">${food.emoji}</div>
-      <div class="food-info">
-        <div class="food-name">${food.name}</div>
-        <div class="food-detail">${food.serving} · 탄 ${food.carb}g · 단 ${food.protein}g · 지 ${food.fat}g</div>
-      </div>
-      <div>
+  const el=document.getElementById('searchResults'); el.innerHTML='';
+  foods.forEach((food,i)=>{
+    const card=document.createElement('div'); card.className='food-card';
+    card.innerHTML=`<div class="food-emoji">${food.emoji}</div>
+      <div class="food-info"><div class="food-name">${food.name}</div>
+      <div class="food-detail">${food.serving} · 탄${food.carb}g 단${food.protein}g 지${food.fat}g</div></div>
+      <div style="text-align:right">
         <div class="food-kcal">${food.kcal}<span>kcal</span></div>
-        <button onclick="toggleFavorite(event, ${i})" style="background:none;border:none;font-size:16px;cursor:pointer;float:right" id="favBtn_${i}">
-          ${isFavorite(food.name) ? '⭐' : '☆'}
+        <button onclick="toggleFav(event,${i})" style="background:none;border:none;font-size:16px;cursor:pointer;display:block;margin-left:auto" id="favBtn_${i}">
+          ${isFav(food.name)?'⭐':'☆'}
         </button>
       </div>`;
-    card.onclick = () => selectFood(food, card);
+    card.onclick=()=>selectFood(food,card);
     el.appendChild(card);
   });
-  window._searchFoods = foods;
+  window._searchFoods=foods;
 }
 
-function isFavorite(name) {
-  return getFavs().some(f => f.name === name);
-}
-
-function toggleFavorite(e, idx) {
+function isFav(name){ return getFavs().some(f=>f.name===name); }
+function toggleFav(e,idx){
   e.stopPropagation();
-  const food = window._searchFoods[idx];
-  const favs = getFavs();
-  const existing = favs.findIndex(f => f.name === food.name);
-  if (existing >= 0) {
-    favs.splice(existing, 1);
-    document.getElementById('favBtn_'+idx).textContent = '☆';
-    showToast('즐겨찾기에서 제거했어요');
-  } else {
-    favs.push(food);
-    document.getElementById('favBtn_'+idx).textContent = '⭐';
-    showToast('⭐ 즐겨찾기에 추가했어요!', 'success');
-  }
+  const food=window._searchFoods[idx]; const favs=getFavs();
+  const ei=favs.findIndex(f=>f.name===food.name);
+  if(ei>=0){favs.splice(ei,1);document.getElementById('favBtn_'+idx).textContent='☆';showToast('즐겨찾기 제거');}
+  else{favs.push(food);document.getElementById('favBtn_'+idx).textContent='⭐';showToast('⭐ 즐겨찾기 추가!','success');}
   saveFavs(favs);
 }
-
-function selectFood(food, card) {
-  document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  STATE.selectedFood = food;
-  document.getElementById('addSection').style.display = 'block';
-  document.getElementById('amountUnit').textContent = food.serving.includes('g') ? 'g' : '인분';
-  window.scrollTo({ top: 200, behavior: 'smooth' });
+function selectFood(food,card){
+  document.querySelectorAll('.food-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected'); STATE.selectedFood=food;
+  document.getElementById('addSection').style.display='block';
+  document.getElementById('amountUnit').textContent=food.serving.includes('g')?'g':'인분';
+  window.scrollTo({top:300,behavior:'smooth'});
 }
-
-function selectMealType(type, btn) {
-  STATE.selectedMealType = type;
-  document.querySelectorAll('.meal-type-btn').forEach(b => b.classList.remove('active'));
+function selectMealType(type,btn){
+  STATE.selectedMealType=type;
+  document.querySelectorAll('.meal-type-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
-
-function addFoodToLog() {
-  if (!STATE.selectedFood) return;
-  const amount = parseFloat(document.getElementById('amountInput').value) || 1;
-  const food = STATE.selectedFood;
-  const factor = amount;
-
-  const entry = {
-    id: Date.now(),
-    name: food.name,
-    emoji: food.emoji,
-    serving: food.serving,
-    amount: amount,
-    mealType: STATE.selectedMealType,
-    kcal: Math.round(food.kcal * factor),
-    carb: Math.round(food.carb * factor),
-    protein: Math.round(food.protein * factor),
-    fat: Math.round(food.fat * factor),
-    sodium: Math.round(food.sodium * factor),
-    time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-  };
-
-  // Binge check
-  const mealThisType = getTodayLogs()
-    .filter(i => i.mealType === entry.mealType)
-    .reduce((s, i) => s + i.kcal, 0) + entry.kcal;
-  
-  if (mealThisType > STATE.bingeThreshold) {
+function addFoodToLog(){
+  if(!STATE.selectedFood) return;
+  const amount=parseFloat(document.getElementById('amountInput').value)||1;
+  const food=STATE.selectedFood;
+  const entry={id:Date.now(),name:food.name,emoji:food.emoji,serving:food.serving,amount,
+    mealType:STATE.selectedMealType,
+    kcal:Math.round(food.kcal*amount),carb:Math.round(food.carb*amount),
+    protein:Math.round(food.protein*amount),fat:Math.round(food.fat*amount),
+    sodium:Math.round(food.sodium*amount),
+    time:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})};
+  const mealKcal=getTodayLogs().filter(i=>i.mealType===entry.mealType).reduce((s,i)=>s+i.kcal,0)+entry.kcal;
+  if(mealKcal>STATE.bingeThreshold){
     document.getElementById('bingeBanner').classList.add('show');
-    document.getElementById('bingeText').textContent =
-      `${entry.mealType}에만 ${mealThisType}kcal! 목표의 ${Math.round(mealThisType/getGoalKcal()*100)}%예요. 잠깐 쉬어가요 🤍`;
+    document.getElementById('bingeText').textContent=`${entry.mealType}에만 ${mealKcal}kcal! 목표의 ${Math.round(mealKcal/getGoalKcal()*100)}%예요 🤍`;
   }
-
-  const today = getTodayLogs();
-  today.push(entry);
-  saveTodayLogs(today);
-  updateRing();
-  showToast(`${food.emoji} ${food.name} 추가됐어요!`, 'success');
-  document.getElementById('amountInput').value = 1;
+  const today=getTodayLogs(); today.push(entry); saveTodayLogs(today);
+  updateRing(); showToast(`${food.emoji} ${food.name} 추가!`,'success');
+  document.getElementById('amountInput').value=1;
 }
 
-// ─── TODAY ───────────────────────────────────────────────
-function renderToday() {
-  const today = getTodayLogs();
-  // Nutrients
-  const totals = { carb:0, protein:0, fat:0, sodium:0 };
-  today.forEach(i => { totals.carb+=i.carb; totals.protein+=i.protein; totals.fat+=i.fat; totals.sodium+=i.sodium; });
-  const carbGoal=130, proteinGoal=50, fatGoal=44, sodiumGoal=2000;
-  document.getElementById('carbVal').textContent = `${totals.carb} / ${carbGoal}g`;
-  document.getElementById('proteinVal').textContent = `${totals.protein} / ${proteinGoal}g`;
-  document.getElementById('fatVal').textContent = `${totals.fat} / ${fatGoal}g`;
-  document.getElementById('sodiumVal').textContent = `${totals.sodium} / ${sodiumGoal}mg`;
-  document.getElementById('carbBar').style.width = Math.min(totals.carb/carbGoal*100,100)+'%';
-  document.getElementById('proteinBar').style.width = Math.min(totals.protein/proteinGoal*100,100)+'%';
-  document.getElementById('fatBar').style.width = Math.min(totals.fat/fatGoal*100,100)+'%';
-  document.getElementById('sodiumBar').style.width = Math.min(totals.sodium/sodiumGoal*100,100)+'%';
-
-  // Meals grouped
-  const groups = { '아침':[], '점심':[], '저녁':[], '간식':[] };
-  today.forEach(i => { if (groups[i.mealType]) groups[i.mealType].push(i); });
-  const icons = { '아침':'🌅', '점심':'☀️', '저녁':'🌙', '간식':'🍪' };
-
-  const el = document.getElementById('todayMeals');
-  if (today.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-emoji">🍽️</div><p>오늘 아직 기록이 없어요!<br>검색 탭에서 음식을 추가해보세요</p></div>`;
-    return;
-  }
-  el.innerHTML = '';
-  Object.entries(groups).forEach(([type, items]) => {
-    if (!items.length) return;
-    const g = document.createElement('div');
-    g.className = 'meal-group';
-    const typeKcal = items.reduce((s,i)=>s+i.kcal,0);
-    g.innerHTML = `<div class="meal-group-header">${icons[type]} ${type} · ${typeKcal}kcal</div>
-      ${items.map(item => `
-        <div class="meal-item">
-          <span class="meal-item-emoji">${item.emoji}</span>
-          <div class="meal-item-info">
-            <div class="meal-item-name">${item.name}</div>
-            <div class="meal-item-detail">${item.amount}${item.serving.includes('g')?'g':'인분'} · ${item.time}</div>
-          </div>
-          <span class="meal-item-kcal">${item.kcal}kcal</span>
-          <button class="meal-item-del" onclick="deleteLog(${item.id})">🗑️</button>
-        </div>`).join('')}`;
+// Today
+function renderToday(){
+  const today=getTodayLogs();
+  const t={carb:0,protein:0,fat:0,sodium:0};
+  today.forEach(i=>{t.carb+=i.carb;t.protein+=i.protein;t.fat+=i.fat;t.sodium+=i.sodium});
+  document.getElementById('carbVal').textContent=`${t.carb}/130g`;
+  document.getElementById('proteinVal').textContent=`${t.protein}/50g`;
+  document.getElementById('fatVal').textContent=`${t.fat}/44g`;
+  document.getElementById('sodiumVal').textContent=`${t.sodium}/2000mg`;
+  document.getElementById('carbBar').style.width=Math.min(t.carb/130*100,100)+'%';
+  document.getElementById('proteinBar').style.width=Math.min(t.protein/50*100,100)+'%';
+  document.getElementById('fatBar').style.width=Math.min(t.fat/44*100,100)+'%';
+  document.getElementById('sodiumBar').style.width=Math.min(t.sodium/2000*100,100)+'%';
+  const groups={'아침':[],'점심':[],'저녁':[],'간식':[]};
+  today.forEach(i=>{if(groups[i.mealType])groups[i.mealType].push(i)});
+  const icons={'아침':'🌅','점심':'☀️','저녁':'🌙','간식':'🍪'};
+  const el=document.getElementById('todayMeals');
+  if(!today.length){el.innerHTML='<div class="empty-state"><div class="empty-emoji">🍽️</div><p>아직 기록이 없어요!<br>검색 탭에서 추가해보세요</p></div>';return;}
+  el.innerHTML='';
+  Object.entries(groups).forEach(([type,items])=>{
+    if(!items.length) return;
+    const g=document.createElement('div'); g.className='meal-group';
+    const tk=items.reduce((s,i)=>s+i.kcal,0);
+    g.innerHTML=`<div class="meal-group-header">${icons[type]} ${type} · ${tk}kcal</div>
+      ${items.map(item=>`<div class="meal-item">
+        <span class="meal-item-emoji">${item.emoji}</span>
+        <div class="meal-item-info"><div class="meal-item-name">${item.name}</div>
+        <div class="meal-item-detail">${item.amount}${item.serving.includes('g')?'g':'인분'} · ${item.time}</div></div>
+        <span class="meal-item-kcal">${item.kcal}kcal</span>
+        <button class="meal-item-del" onclick="deleteLog(${item.id})">🗑️</button>
+      </div>`).join('')}`;
     el.appendChild(g);
   });
 }
+function deleteLog(id){ saveTodayLogs(getTodayLogs().filter(i=>i.id!==id)); updateRing(); renderToday(); showToast('삭제했어요'); }
 
-function deleteLog(id) {
-  const today = getTodayLogs().filter(i => i.id !== id);
-  saveTodayLogs(today);
-  updateRing();
-  renderToday();
-  showToast('삭제했어요');
-  // re-check binge
-  const logs = getLogs();
-  const allMeals = getTodayLogs();
-  const maxMeal = Math.max(...['아침','점심','저녁','간식'].map(t =>
-    allMeals.filter(i=>i.mealType===t).reduce((s,i)=>s+i.kcal,0)));
-  if (maxMeal <= STATE.bingeThreshold) {
-    document.getElementById('bingeBanner').classList.remove('show');
+// Water
+function renderWater(){
+  const g=getWater(); const el=document.getElementById('waterGlasses'); el.innerHTML='';
+  for(let i=0;i<8;i++){
+    const btn=document.createElement('button'); btn.className='water-glass'+(i<g?' filled':'');
+    btn.textContent='🥛'; btn.onclick=()=>toggleWater(i); el.appendChild(btn);
   }
+  document.getElementById('waterInfo').textContent=`${g}/8잔 · ${g*200}ml`+(g>=8?' 🎉 달성!':'');
 }
+function toggleWater(idx){ saveWater(idx<getWater()?idx:idx+1); renderWater(); }
 
-// ─── WATER ───────────────────────────────────────────────
-function renderWater() {
-  const glasses = getWater();
-  const el = document.getElementById('waterGlasses');
-  el.innerHTML = '';
-  for (let i = 0; i < 8; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'water-glass' + (i < glasses ? ' filled' : '');
-    btn.textContent = '🥛';
-    btn.onclick = () => toggleWater(i);
-    el.appendChild(btn);
-  }
-  document.getElementById('waterInfo').textContent =
-    `${glasses}/8잔 · ${glasses*200}ml 마셨어요` + (glasses >= 8 ? ' 🎉 목표 달성!' : '');
-}
-
-function toggleWater(idx) {
-  const current = getWater();
-  saveWater(idx < current ? idx : idx + 1);
-  renderWater();
-}
-
-// ─── STATS ───────────────────────────────────────────────
-function renderStats() {
-  const logs = getLogs();
-  const goal = getGoalKcal();
-  // Weekly chart
-  const el = document.getElementById('weeklyChart');
-  el.innerHTML = '';
-  const days = ['일','월','화','수','목','금','토'];
-  const colors = ['#FF6B6B','#FFD166','#6BCFB0','#74B9FF','#C77DFF','#FF6B6B','#FFD166'];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const key = d.toISOString().split('T')[0];
-    const kcal = (logs[key] || []).reduce((s, it) => s + it.kcal, 0);
-    const pct = Math.min(kcal / goal * 100, 120);
-    const w = document.createElement('div');
-    w.className = 'wbar-wrap';
-    w.innerHTML = `
-      <div class="wbar-val">${kcal > 0 ? kcal : ''}</div>
-      <div class="wbar" style="height:${Math.max(pct*0.7,2)}px;background:${pct>100?'#FF6B6B':colors[i]}"></div>
-      <div class="wbar-label">${days[d.getDay()]}</div>`;
-    el.appendChild(w);
-  }
-
-  // Nutrient pie
-  const pieEl = document.getElementById('nutrientPie');
-  let totalC=0,totalP=0,totalF=0;
-  Object.values(logs).forEach(day => day.forEach(i => { totalC+=i.carb; totalP+=i.protein; totalF+=i.fat; }));
-  const total = totalC+totalP+totalF || 1;
-  pieEl.innerHTML = [
-    {label:'탄수화물',val:totalC,color:'#FFD166'},
-    {label:'단백질',val:totalP,color:'#6BCFB0'},
-    {label:'지방',val:totalF,color:'#C77DFF'},
-  ].map(n => `
-    <div style="flex:1;min-width:80px;text-align:center;background:#FAFAFA;border-radius:14px;padding:12px 8px">
-      <div style="font-size:20px;font-weight:700;color:${n.color}">${Math.round(n.val/total*100)}%</div>
-      <div style="font-size:11px;color:#999;margin-top:4px">${n.label}</div>
-      <div style="font-size:11px;font-weight:600;color:#555;margin-top:2px">${n.val}g</div>
-    </div>`).join('');
-
-  // Weekly summary
-  const summEl = document.getElementById('weeklySummary');
-  let days7=0, totalKcal7=0, bestDay='', bestKcal=0;
-  for (let i=0;i<7;i++) {
-    const d = new Date(); d.setDate(d.getDate()-i);
-    const key = d.toISOString().split('T')[0];
-    const kcal = (logs[key]||[]).reduce((s,it)=>s+it.kcal,0);
-    if (kcal>0){ days7++; totalKcal7+=kcal; }
-    if (kcal > bestKcal){ bestKcal=kcal; bestDay=`${d.getMonth()+1}/${d.getDate()}`; }
-  }
-  const avg = days7 ? Math.round(totalKcal7/days7) : 0;
-  summEl.innerHTML = `
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div style="flex:1;background:var(--coral-light);border-radius:14px;padding:14px;text-align:center">
-        <div style="font-size:20px;font-weight:700;color:var(--coral)">${avg}</div>
-        <div style="font-size:11px;color:#999;margin-top:4px">평균 kcal</div>
-      </div>
-      <div style="flex:1;background:var(--mint-light);border-radius:14px;padding:14px;text-align:center">
-        <div style="font-size:20px;font-weight:700;color:var(--mint)">${days7}일</div>
-        <div style="font-size:11px;color:#999;margin-top:4px">기록한 날</div>
-      </div>
-      <div style="flex:1;background:var(--yellow-light);border-radius:14px;padding:14px;text-align:center">
-        <div style="font-size:18px;font-weight:700;color:#E6A817">${bestDay||'-'}</div>
-        <div style="font-size:11px;color:#999;margin-top:4px">최다 섭취일</div>
-      </div>
-    </div>
-    <div style="margin-top:12px;font-size:13px;color:#555;text-align:center;padding:10px;background:#FAFAFA;border-radius:12px">
-      ${avg === 0 ? '아직 기록이 없어요 😊' :
-        avg < goal * 0.8 ? '🎉 목표보다 적게 먹고 있어요! 잘하고 있어요!' :
-        avg < goal ? '💪 목표 범위에서 잘 조절하고 있어요!' :
-        '⚡ 목표 칼로리를 약간 초과했어요. 오늘은 조금 줄여볼까요?'}
-    </div>`;
-}
-
-// ─── HISTORY ───────────────────────────────────────────────
-let historyYear, historyMonth;
-function initHistoryMonth() {
-  const now = new Date();
-  historyYear = now.getFullYear();
-  historyMonth = now.getMonth();
-}
-function changeHistoryMonth(delta) {
-  historyMonth += delta;
-  if (historyMonth < 0) { historyMonth = 11; historyYear--; }
-  if (historyMonth > 11) { historyMonth = 0; historyYear++; }
-  renderHistory();
-}
-function renderHistory() {
-  if (historyYear === undefined) initHistoryMonth();
-  document.getElementById('historyMonthLabel').textContent = `${historyYear}년 ${historyMonth+1}월`;
-  const logs = getLogs();
-  const goal = getGoalKcal();
-  const el = document.getElementById('historyList');
-  el.innerHTML = '';
-
-  const daysInMonth = new Date(historyYear, historyMonth+1, 0).getDate();
-  let found = false;
-  for (let d = daysInMonth; d >= 1; d--) {
-    const key = `${historyYear}-${String(historyMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const items = logs[key];
-    if (!items || !items.length) continue;
-    found = true;
-    const kcal = items.reduce((s,i)=>s+i.kcal,0);
-    const pct = Math.min(kcal/goal*100,100);
-    const dateObj = new Date(key);
-    const days = ['일','월','화','수','목','금','토'];
-    const div = document.createElement('div');
-    div.className = 'history-day';
-    div.innerHTML = `
-      <div class="history-day-head">
-        <span class="history-day-date">${historyMonth+1}월 ${d}일 (${days[dateObj.getDay()]})</span>
-        <span class="history-day-kcal">${kcal}kcal ${kcal>goal?'🔴':'🟢'}</span>
-      </div>
-      <div class="history-progress-bg">
-        <div class="history-progress-fill" style="width:${pct}%;background:${kcal>goal?'#FF6B6B':'#6BCFB0'}"></div>
-      </div>
-      <div class="history-foods">${items.map(i=>i.emoji+i.name).join(' · ')}</div>`;
-    el.appendChild(div);
-  }
-  if (!found) el.innerHTML = `<div class="empty-state"><div class="empty-emoji">📅</div><p>이 달엔 기록이 없어요</p></div>`;
-}
-
-function getTodayExerciseLogs() {
-  const logs = JSON.parse(localStorage.getItem('ct_exercise') || '{}');
-  return logs[todayKey()] || [];
-}
-function saveTodayExerciseLogs(items) {
-  const logs = JSON.parse(localStorage.getItem('ct_exercise') || '{}');
-  logs[todayKey()] = items;
-  localStorage.setItem('ct_exercise', JSON.stringify(logs));
-}
-
-// ─── EXERCISE SEARCH ───────────────────────────────────────────────
-async function searchExercise() {
-  const q = document.getElementById('exerciseInput').value.trim();
-  if (!q) return;
-  document.getElementById('exerciseLoading').style.display = 'block';
-  document.getElementById('exerciseResults').innerHTML = '';
-  document.getElementById('exerciseAddSection').style.display = 'none';
-  STATE.selectedExercise = null;
-
+// Exercise
+async function searchExercise(){
+  const q=document.getElementById('exerciseInput').value.trim(); if(!q) return;
+  document.getElementById('exerciseLoading').style.display='block';
+  document.getElementById('exerciseResults').innerHTML='';
+  document.getElementById('exerciseAddSection').style.display='none';
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: `당신은 운동 칼로리 소모량 전문가입니다.
-사용자가 운동 종목을 입력하면 JSON만 응답하세요. 다른 텍스트는 절대 포함하지 마세요.
-응답 형식: {"exercises":[{"name":"운동명","kcalPerMin":숫자,"intensity":"낮음|보통|높음","emoji":"이모지","tip":"짧은팁"}]}
-kcalPerMin은 체중 55-60kg 여성 기준 분당 소모 칼로리(소수점 1자리).
-1-2개 항목으로 응답하세요.`,
-        messages: [{ role: 'user', content: `${q} 운동의 칼로리 소모량` }]
-      })
-    });
-    const data = await res.json();
-    const text = data.content[0].text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(text);
+    const text=await callAI(
+      '운동 칼로리 전문가. JSON만 응답. 형식: {"exercises":[{"name":"운동명","kcalPerMin":숫자,"intensity":"낮음|보통|높음","emoji":"이모지","tip":"짧은팁"}]} 체중 58kg 여성 기준. 1-2개.',
+      q+' 운동 칼로리 소모량'
+    );
+    const parsed=JSON.parse(text);
     renderExerciseResults(parsed.exercises);
   } catch(e) {
-    document.getElementById('exerciseResults').innerHTML =
-      `<div style="text-align:center;padding:20px;color:#999;font-size:13px">😥 오류가 발생했어요. 다시 시도해주세요.</div>`;
+    document.getElementById('exerciseResults').innerHTML=
+      `<div style="text-align:center;padding:20px;color:#999;font-size:13px">😥 오류가 발생했어요.<br>${e.message}</div>`;
   }
-  document.getElementById('exerciseLoading').style.display = 'none';
+  document.getElementById('exerciseLoading').style.display='none';
 }
-
-function renderExerciseResults(exercises) {
-  const el = document.getElementById('exerciseResults');
-  el.innerHTML = '';
-  exercises.forEach((ex, i) => {
-    const intensityColor = ex.intensity === '높음' ? '#FF6B6B' : ex.intensity === '보통' ? '#FFD166' : '#6BCFB0';
-    const card = document.createElement('div');
-    card.className = 'food-card';
-    card.innerHTML = `
-      <div class="food-emoji">${ex.emoji}</div>
-      <div class="food-info">
-        <div class="food-name">${ex.name}</div>
-        <div class="food-detail">${ex.tip}</div>
-        <div style="margin-top:4px">
-          <span style="background:${intensityColor}22;color:${intensityColor};font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">${ex.intensity} 강도</span>
-        </div>
-      </div>
-      <div style="text-align:right">
-        <div class="food-kcal">${ex.kcalPerMin}<span>kcal/분</span></div>
-      </div>`;
-    card.onclick = () => {
-      document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      STATE.selectedExercise = ex;
-      document.getElementById('exerciseAddSection').style.display = 'block';
+function renderExerciseResults(exercises){
+  const el=document.getElementById('exerciseResults'); el.innerHTML='';
+  exercises.forEach(ex=>{
+    const ic=ex.intensity==='높음'?'#FF6B6B':ex.intensity==='보통'?'#FFD166':'#6BCFB0';
+    const card=document.createElement('div'); card.className='food-card';
+    card.innerHTML=`<div class="food-emoji">${ex.emoji}</div>
+      <div class="food-info"><div class="food-name">${ex.name}</div>
+      <div class="food-detail">${ex.tip}</div>
+      <div style="margin-top:4px"><span style="background:${ic}22;color:${ic};font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">${ex.intensity} 강도</span></div></div>
+      <div style="text-align:right"><div class="food-kcal">${ex.kcalPerMin}<span>kcal/분</span></div></div>`;
+    card.onclick=()=>{
+      document.querySelectorAll('.food-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected'); STATE.selectedExercise=ex;
+      document.getElementById('exerciseAddSection').style.display='block';
     };
     el.appendChild(card);
   });
-  window._searchExercises = exercises;
 }
-
-function addExerciseToLog() {
-  if (!STATE.selectedExercise) return;
-  const minutes = parseInt(document.getElementById('exerciseMinutes').value) || 30;
-  const ex = STATE.selectedExercise;
-  const burned = Math.round(ex.kcalPerMin * minutes);
-
-  const entry = {
-    id: Date.now(),
-    name: ex.name,
-    emoji: ex.emoji,
-    minutes: minutes,
-    burned: burned,
-    intensity: ex.intensity,
-    time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-  };
-
-  const today = getTodayExerciseLogs();
-  today.push(entry);
-  saveTodayExerciseLogs(today);
-  updateRing();
-  renderTodayExercise();
-  showToast(`${ex.emoji} ${minutes}분 운동! -${burned}kcal 🔥`, 'success');
-  document.getElementById('exerciseMinutes').value = 30;
-  document.querySelectorAll('.food-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('exerciseAddSection').style.display = 'none';
+function addExerciseToLog(){
+  if(!STATE.selectedExercise) return;
+  const minutes=parseInt(document.getElementById('exerciseMinutes').value)||30;
+  const ex=STATE.selectedExercise;
+  const entry={id:Date.now(),name:ex.name,emoji:ex.emoji,minutes,
+    burned:Math.round(ex.kcalPerMin*minutes),intensity:ex.intensity,
+    time:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})};
+  const today=getTodayExLogs(); today.push(entry); saveTodayExLogs(today);
+  updateRing(); renderTodayExercise();
+  showToast(`${ex.emoji} ${minutes}분! -${entry.burned}kcal 🔥`,'success');
+  document.getElementById('exerciseMinutes').value=30;
+  document.querySelectorAll('.food-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('exerciseAddSection').style.display='none';
 }
+function renderTodayExercise(){
+  const logs=getTodayExLogs(); const el=document.getElementById('todayExerciseList'); if(!el) return;
+  if(!logs.length){el.innerHTML='<div class="empty-state"><div class="empty-emoji">🏃</div><p>오늘 운동 기록이 없어요!<br>운동하고 칼로리를 소모해봐요 💪</p></div>';return;}
+  const total=logs.reduce((s,i)=>s+i.burned,0);
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#6BCFB0,#45B896);border-radius:14px;padding:12px 16px;margin-bottom:12px;color:#fff;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:13px;font-weight:500">오늘 총 소모</span><span style="font-size:20px;font-weight:700">🔥 ${total}kcal</span>
+  </div>
+  ${logs.map(item=>`<div class="meal-item">
+    <span class="meal-item-emoji">${item.emoji}</span>
+    <div class="meal-item-info"><div class="meal-item-name">${item.name}</div>
+    <div class="meal-item-detail">${item.minutes}분 · ${item.intensity} 강도 · ${item.time}</div></div>
+    <span style="font-size:14px;font-weight:700;color:#6BCFB0">-${item.burned}kcal</span>
+    <button class="meal-item-del" onclick="deleteExercise(${item.id})">🗑️</button>
+  </div>`).join('')}`;
+}
+function deleteExercise(id){ saveTodayExLogs(getTodayExLogs().filter(i=>i.id!==id)); updateRing(); renderTodayExercise(); showToast('삭제했어요'); }
 
-function renderTodayExercise() {
-  const logs = getTodayExerciseLogs();
-  const el = document.getElementById('todayExerciseList');
-  if (!el) return;
-  if (!logs.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-emoji">🏃</div><p>오늘 운동 기록이 없어요!<br>운동하고 칼로리를 소모해봐요 💪</p></div>`;
-    return;
+// Stats
+function renderStats(){
+  const logs=getLogs(); const goal=getGoalKcal();
+  const days=['일','월','화','수','목','금','토'];
+  const colors=['#FF6B6B','#FFD166','#6BCFB0','#74B9FF','#C77DFF','#FF6B6B','#FFD166'];
+  const el=document.getElementById('weeklyChart'); el.innerHTML='';
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    const kcal=(logs[key]||[]).reduce((s,it)=>s+it.kcal,0);
+    const pct=Math.min(kcal/goal*100,120);
+    const w=document.createElement('div'); w.className='wbar-wrap';
+    w.innerHTML=`<div class="wbar-val">${kcal>0?kcal:''}</div>
+      <div class="wbar" style="height:${Math.max(pct*.7,2)}px;background:${pct>100?'#FF6B6B':colors[i]}"></div>
+      <div class="wbar-label">${days[d.getDay()]}</div>`;
+    el.appendChild(w);
   }
-  const totalBurned = logs.reduce((s, i) => s + i.burned, 0);
-  el.innerHTML = `
-    <div style="background:linear-gradient(135deg,#6BCFB0,#45B896);border-radius:14px;padding:12px 16px;margin-bottom:12px;color:white;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;font-weight:500">오늘 총 소모</span>
-      <span style="font-size:20px;font-weight:700">🔥 ${totalBurned}kcal</span>
+  let tC=0,tP=0,tF=0;
+  Object.values(logs).forEach(day=>day.forEach(i=>{tC+=i.carb;tP+=i.protein;tF+=i.fat}));
+  const tot=tC+tP+tF||1;
+  document.getElementById('nutrientPie').innerHTML=[
+    {label:'탄수화물',val:tC,color:'#FFD166'},{label:'단백질',val:tP,color:'#6BCFB0'},{label:'지방',val:tF,color:'#C77DFF'}
+  ].map(n=>`<div style="flex:1;min-width:80px;text-align:center;background:#FAFAFA;border-radius:14px;padding:12px 8px">
+    <div style="font-size:20px;font-weight:700;color:${n.color}">${Math.round(n.val/tot*100)}%</div>
+    <div style="font-size:11px;color:#999;margin-top:4px">${n.label}</div>
+    <div style="font-size:11px;font-weight:600;color:#555;margin-top:2px">${n.val}g</div></div>`).join('');
+  let d7=0,t7=0,bDay='',bKcal=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const k=d.toISOString().split('T')[0];
+    const kc=(logs[k]||[]).reduce((s,it)=>s+it.kcal,0);
+    if(kc>0){d7++;t7+=kc;} if(kc>bKcal){bKcal=kc;bDay=`${d.getMonth()+1}/${d.getDate()}`;}
+  }
+  const avg=d7?Math.round(t7/d7):0;
+  document.getElementById('weeklySummary').innerHTML=`
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;background:var(--coral-light);border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--coral)">${avg}</div><div style="font-size:11px;color:#999;margin-top:4px">평균 kcal</div></div>
+      <div style="flex:1;background:var(--mint-light);border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:var(--mint)">${d7}일</div><div style="font-size:11px;color:#999;margin-top:4px">기록한 날</div></div>
+      <div style="flex:1;background:var(--yellow-light);border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:700;color:#E6A817">${bDay||'-'}</div><div style="font-size:11px;color:#999;margin-top:4px">최다 섭취일</div></div>
     </div>
-    ${logs.map(item => `
-      <div class="meal-item">
-        <span class="meal-item-emoji">${item.emoji}</span>
-        <div class="meal-item-info">
-          <div class="meal-item-name">${item.name}</div>
-          <div class="meal-item-detail">${item.minutes}분 · ${item.intensity} 강도 · ${item.time}</div>
-        </div>
-        <span style="font-size:14px;font-weight:700;color:#6BCFB0">-${item.burned}kcal</span>
-        <button class="meal-item-del" onclick="deleteExercise(${item.id})">🗑️</button>
-      </div>`).join('')}`;
+    <div style="margin-top:12px;font-size:13px;color:#555;text-align:center;padding:10px;background:#FAFAFA;border-radius:12px">
+      ${avg===0?'아직 기록이 없어요 😊':avg<goal*.8?'🎉 목표보다 잘 지키고 있어요!':avg<goal?'💪 목표 범위에서 잘 조절 중이에요!':'⚡ 목표를 약간 초과했어요. 오늘은 조금 줄여볼까요?'}
+    </div>`;
 }
 
-function deleteExercise(id) {
-  const logs = getTodayExerciseLogs().filter(i => i.id !== id);
-  saveTodayExerciseLogs(logs);
-  updateRing();
-  renderTodayExercise();
-  showToast('운동 기록을 삭제했어요');
+// History
+function renderHistory(){
+  if(_historyYear===undefined){const n=new Date();_historyYear=n.getFullYear();_historyMonth=n.getMonth();}
+  document.getElementById('historyMonthLabel').textContent=`${_historyYear}년 ${_historyMonth+1}월`;
+  const logs=getLogs(); const goal=getGoalKcal();
+  const el=document.getElementById('historyList'); el.innerHTML='';
+  const dim=new Date(_historyYear,_historyMonth+1,0).getDate();
+  const days=['일','월','화','수','목','금','토']; let found=false;
+  for(let d=dim;d>=1;d--){
+    const key=`${_historyYear}-${String(_historyMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const items=logs[key]; if(!items||!items.length) continue; found=true;
+    const kcal=items.reduce((s,i)=>s+i.kcal,0); const pct=Math.min(kcal/goal*100,100);
+    const dateObj=new Date(key);
+    const div=document.createElement('div'); div.className='history-day';
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:700">${_historyMonth+1}월 ${d}일 (${days[dateObj.getDay()]})</span>
+      <span style="font-size:14px;font-weight:700;color:var(--coral)">${kcal}kcal ${kcal>goal?'🔴':'🟢'}</span></div>
+    <div style="height:6px;background:#F5F5F5;border-radius:3px;overflow:hidden;margin-bottom:8px">
+      <div style="height:100%;background:${kcal>goal?'#FF6B6B':'#6BCFB0'};border-radius:3px;width:${pct}%"></div></div>
+    <div style="font-size:12px;color:var(--muted)">${items.map(i=>i.emoji+i.name).join(' · ')}</div>`;
+    el.appendChild(div);
+  }
+  if(!found) el.innerHTML='<div class="empty-state"><div class="empty-emoji">📅</div><p>이 달엔 기록이 없어요</p></div>';
+}
+function changeHistoryMonth(d){
+  _historyMonth+=d;
+  if(_historyMonth<0){_historyMonth=11;_historyYear--;}
+  if(_historyMonth>11){_historyMonth=0;_historyYear++;}
+  renderHistory();
 }
 
-// ─── FAVORITES ───────────────────────────────────────────────
-function renderFavorites() {
-  const favs = getFavs();
-  const el = document.getElementById('favList');
-  const empty = document.getElementById('favEmpty');
-  if (!favs.length) { el.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none';
-  el.innerHTML = favs.map((f, i) => `
-    <div class="fav-item">
-      <span class="fav-emoji">${f.emoji}</span>
-      <div class="fav-info">
-        <div class="fav-name">${f.name}</div>
-        <div class="fav-kcal">${f.kcal}kcal · ${f.serving}</div>
-      </div>
-      <button class="fav-add-btn" onclick="addFavToLog(${i})">+ 추가</button>
-      <button class="fav-del-btn" onclick="removeFav(${i})">✕</button>
-    </div>`).join('');
+// Favorites
+function renderFavorites(){
+  const favs=getFavs(); const el=document.getElementById('favList'); const empty=document.getElementById('favEmpty');
+  if(!favs.length){el.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  el.innerHTML=favs.map((f,i)=>`<div class="meal-item">
+    <span class="meal-item-emoji">${f.emoji}</span>
+    <div class="meal-item-info"><div class="meal-item-name">${f.name}</div>
+    <div class="meal-item-detail">${f.kcal}kcal · ${f.serving}</div></div>
+    <button style="background:var(--coral);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;flex-shrink:0" onclick="addFavToLog(${i})">+ 추가</button>
+    <button class="meal-item-del" onclick="removeFav(${i})">✕</button>
+  </div>`).join('');
 }
+function addFavToLog(idx){ const food=getFavs()[idx]; STATE.selectedFood=food; showPage('search'); document.getElementById('addSection').style.display='block'; showToast(`${food.emoji} ${food.name} 선택!`); }
+function removeFav(idx){ const f=getFavs(); f.splice(idx,1); saveFavs(f); renderFavorites(); showToast('즐겨찾기 제거'); }
 
-function addFavToLog(idx) {
-  const food = getFavs()[idx];
-  STATE.selectedFood = food;
-  showPage('search');
-  document.getElementById('searchInput').value = food.name;
-  document.getElementById('addSection').style.display = 'block';
-  showToast(`${food.emoji} ${food.name} 선택됨!`);
-}
-
-function removeFav(idx) {
-  const favs = getFavs();
-  favs.splice(idx, 1);
-  saveFavs(favs);
-  renderFavorites();
-  showToast('즐겨찾기에서 제거했어요');
-}
-
-// ─── SETTINGS ───────────────────────────────────────────────
-function saveSettings() {
-  STATE.bmr = parseInt(document.getElementById('setBMR').value) || 1330;
-  const goalVal = parseInt(document.getElementById('setGoal').value);
-  STATE.goalKcal = goalVal || null;
-  STATE.bingeThreshold = parseInt(document.getElementById('setBingeThreshold').value) || 800;
-  localStorage.setItem('ct_settings', JSON.stringify({
-    bmr: STATE.bmr, goalKcal: STATE.goalKcal, bingeThreshold: STATE.bingeThreshold
-  }));
-  updateRing();
-  showToast('✅ 설정 저장됐어요!', 'success');
-  showPage('search');
-}
-
-// ─── TOAST ───────────────────────────────────────────────
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 2500);
+// Toast
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',2500);
 }
 </script>
 </body>
