@@ -346,6 +346,20 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <button class="settings-save" onclick="saveSettings()">💾 저장하기</button>
 
   <div class="settings-group">
+    <div class="settings-group-title">☁️ GitHub 동기화</div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <p style="font-size:12px;color:var(--muted)">설정하면 데이터가 GitHub에 자동 저장돼요. 앱 삭제해도 안 날아가요!</p>
+      <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx"
+        style="width:100%;border:2px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Noto Sans KR',sans-serif;background:var(--bg);outline:none;">
+      <div style="display:flex;gap:8px;">
+        <button class="backup-btn" onclick="saveGhToken()" style="flex:1;margin:0;">토큰 저장</button>
+        <button class="backup-btn" onclick="syncFromGitHub()" style="flex:1;margin:0;">지금 불러오기</button>
+      </div>
+      <div id="syncStatus" style="font-size:12px;color:var(--muted);line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <div class="settings-group">
     <div class="settings-group-title">📦 데이터 백업 / 복원</div>
     <div style="padding:14px 16px">
       <p style="font-size:12px;color:var(--muted);margin-bottom:14px">모든 식단·운동 기록을 JSON 파일로 내보내거나 가져올 수 있어요.<br>맥북↔폰 데이터 이동에도 활용할 수 있어요 📲</p>
@@ -419,30 +433,101 @@ function applyViewDate() {
 
 // Storage
 function getLogs()    { return JSON.parse(localStorage.getItem('ct_logs')||'{}'); }
-function saveLogs(l)  { localStorage.setItem('ct_logs',JSON.stringify(l)); }
+function saveLogs(l)  { localStorage.setItem('ct_logs',JSON.stringify(l)); githubSave(); }
 function getTodayLogs()       { return getLogs()[todayKey()]||[]; }
 function saveTodayLogs(items) { const l=getLogs(); l[todayKey()]=items; saveLogs(l); }
 function getFavs()    { return JSON.parse(localStorage.getItem('ct_favs')||'[]'); }
-function saveFavs(f)  { localStorage.setItem('ct_favs',JSON.stringify(f)); }
+function saveFavs(f)  { localStorage.setItem('ct_favs',JSON.stringify(f)); githubSave(); }
 function getWater()   { return (JSON.parse(localStorage.getItem('ct_water')||'{}'))[todayKey()]||0; }
-function saveWater(n) { const w=JSON.parse(localStorage.getItem('ct_water')||'{}'); w[todayKey()]=n; localStorage.setItem('ct_water',JSON.stringify(w)); }
+function saveWater(n) { const w=JSON.parse(localStorage.getItem('ct_water')||'{}'); w[todayKey()]=n; localStorage.setItem('ct_water',JSON.stringify(w)); githubSave(); }
 function getExLogs()          { return JSON.parse(localStorage.getItem('ct_exercise')||'{}'); }
-function saveExLogs(l)        { localStorage.setItem('ct_exercise',JSON.stringify(l)); }
+function saveExLogs(l)        { localStorage.setItem('ct_exercise',JSON.stringify(l)); githubSave(); }
 function getTodayExLogs()     { return getExLogs()[todayKey()]||[]; }
 function saveTodayExLogs(items){ const l=getExLogs(); l[todayKey()]=items; saveExLogs(l); }
+
+// ─── GITHUB 동기화 ──────────────────────────────────────────────
+const GH_OWNER='beenijua', GH_REPO='calorie', GH_FILE='data/calorie-data.json';
+const GH_API=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+function getGhToken(){return localStorage.getItem('gh_token_calorie')||'';}
+
+function saveGhToken(){
+  const t=document.getElementById('ghToken').value.trim();
+  if(!t){showToast('토큰을 입력해주세요','warn');return;}
+  localStorage.setItem('gh_token_calorie',t);
+  document.getElementById('ghToken').value='';
+  document.getElementById('syncStatus').textContent='✅ 토큰 저장됐어요! 지금 불러오기를 눌러보세요.';
+  showToast('토큰 저장됐어요 ✅','success');
+}
+
+let _ghTimer=null;
+async function githubSave(){
+  const token=getGhToken();if(!token)return;
+  clearTimeout(_ghTimer);
+  _ghTimer=setTimeout(async()=>{
+    try{
+      const data={
+        logs:JSON.parse(localStorage.getItem('ct_logs')||'{}'),
+        exercise:JSON.parse(localStorage.getItem('ct_exercise')||'{}'),
+        favs:JSON.parse(localStorage.getItem('ct_favs')||'[]'),
+        water:JSON.parse(localStorage.getItem('ct_water')||'{}'),
+        settings:JSON.parse(localStorage.getItem('ct_settings')||'{}'),
+        userFoods:JSON.parse(localStorage.getItem('ct_user_foods')||'[]'),
+        exportedAt:new Date().toISOString()
+      };
+      const content=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+      let sha='';
+      try{const r=await fetch(GH_API,{headers:{Authorization:`token ${token}`}});if(r.ok){const j=await r.json();sha=j.sha;}}catch(e){}
+      const body={message:'sync: calorie data',content};if(sha)body.sha=sha;
+      const res=await fetch(GH_API,{method:'PUT',headers:{Authorization:`token ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(res.ok){
+        const now=new Date();
+        const el=document.getElementById('syncStatus');
+        if(el)el.textContent=`☁️ 마지막 저장: ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+      }
+    }catch(e){}
+  },1500);
+}
+
+async function syncFromGitHub(){
+  const token=getGhToken();
+  if(!token){showToast('먼저 토큰을 저장해주세요','warn');return;}
+  const el=document.getElementById('syncStatus');
+  if(el)el.textContent='⏳ 불러오는 중...';
+  try{
+    const res=await fetch(GH_API+'?t='+Date.now(),{headers:{Authorization:`token ${token}`}});
+    if(!res.ok){
+      if(el)el.textContent=res.status===404?'☁️ 저장된 데이터 없음 (처음 사용)':'❌ 불러오기 실패 (토큰 확인)';
+      return;
+    }
+    const j=await res.json();
+    const data=JSON.parse(decodeURIComponent(escape(atob(j.content))));
+    if(data.logs)     localStorage.setItem('ct_logs',JSON.stringify(data.logs));
+    if(data.exercise) localStorage.setItem('ct_exercise',JSON.stringify(data.exercise));
+    if(data.favs)     localStorage.setItem('ct_favs',JSON.stringify(data.favs));
+    if(data.water)    localStorage.setItem('ct_water',JSON.stringify(data.water));
+    if(data.settings){localStorage.setItem('ct_settings',JSON.stringify(data.settings));loadSettings();}
+    if(data.userFoods)localStorage.setItem('ct_user_foods',JSON.stringify(data.userFoods));
+    updateRing();renderWater();
+    const logCount=Object.values(data.logs||{}).flat().length;
+    if(el)el.textContent=`✅ 데이터 불러왔어요! (식단 기록 ${logCount}개)`;
+    showToast('데이터 불러왔어요 ✅','success');
+  }catch(e){if(el)el.textContent='❌ 오류: '+e.message;}
+}
 
 function loadSettings() {
   const s=JSON.parse(localStorage.getItem('ct_settings')||'{}');
   STATE.bmr=s.bmr||1330; STATE.goalKcal=s.goalKcal||null; STATE.bingeThreshold=s.bingeThreshold||800;
 }
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   loadSettings();
   STATE.viewDate = todayStr();
   initDateNav();
   applyViewDate();
   renderWater(); updateRing();
   document.getElementById('settingsBtn').addEventListener('click', openSettings);
+  // 토큰 있으면 GitHub에서 자동 불러오기
+  if(getGhToken()) await syncFromGitHub();
   if('serviceWorker' in navigator) navigator.serviceWorker.register('/calorie/sw.js').catch(()=>{});
 });
 
@@ -488,6 +573,8 @@ function openSettings() {
   document.getElementById('setGoal').value=STATE.goalKcal||'';
   document.getElementById('setBingeThreshold').value=STATE.bingeThreshold;
   document.getElementById('settingsOverlay').classList.add('open');
+  const el=document.getElementById('syncStatus');
+  if(el)el.textContent=getGhToken()?'✅ 토큰 설정됨 · 자동 저장 활성화':'⚠️ 토큰 없음 · 데이터가 언제든 삭제될 수 있어요';
 }
 function closeSettings() { document.getElementById('settingsOverlay').classList.remove('open'); }
 
